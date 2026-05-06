@@ -2,11 +2,13 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Optional
 
 from pydantic import BaseModel, Field
 
-from utils.helper import Helper
+from .models.settings_models import AnytypeSettings, SPSettings, TraggoSettings
+from .models.data_models import ReferenceData
+from .utils.helper import Helper
 
 helper = Helper()
 
@@ -29,55 +31,24 @@ class ConfigSettings(BaseModel):
         ),
     ]
 
-    # Task Management
-    anytype_space_id: Annotated[
-        str,
+    # Integrations
+    super_productivity: Optional[
+        SPSettings,
         Field(
-            description="Anytype space id for logging management",
+            description="Settings for Super Productivity",
         ),
     ] = None
 
-    # Pushover
-    pushover: Annotated[
-        bool,
+    anytype: Optional[
+        AnytypeSettings,
         Field(
-            description="Flag for pushover notifications",
+            description="Settings for Anytype",
         ),
-    ] = False
+    ] = None
 
-    log_types: Annotated[
-        anytypeObject,
-        Field(
-            description="types of activities gets logged in journal space",
-        ),
-    ] = False
-
-
-    # task_review_threshold: Annotated[
-    #     int,
-    #     Field(
-    #         description=(
-    #             "Number of says to reset a task before a prompt is generated. "
-    #             "0 is the off switch"
-    #         ),
-    #     ),
-    # ] = 0
-
-
-    pushover_journal_hours: Annotated[
-        list[str],
-        Field(
-            description="Which hours to send notifications",
-        ),
-    ] = []
-
-    # Time Tagger
-    timetagger: Annotated[
-        bool, Field(description="If time tagger side car is used")
-    ] = False
-    timetagger_url: Annotated[
-        str, Field(description="URL to use to make calls to timetagger")
-    ] = "http://timetagger:80"
+    traggo: Optional[
+        TraggoSettings, Field(description="If Traggo side car is used")
+    ] = None
 
 
 class Settings(BaseModel):
