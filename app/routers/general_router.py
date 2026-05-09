@@ -13,5 +13,11 @@ router = APIRouter()
 
 @router.get("/health", status_code=HTTPStatus.ACCEPTED)
 async def get_health_endpoint():
+    """
+    Endpoint for health check
+    Returns:
+        dict: status:okay but could be anything
+    """
+
     """Health Endpoint, should always return 200 OK"""
     return {"status": "ok"}

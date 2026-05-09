@@ -1,4 +1,12 @@
-"""Exception Middleware for managing errors"""
+"""
+Exception Handler for Flux.
+
+Classes:
+    ExceptionMiddleware: Encapsulation for method and connecting FastAPI
+
+TODO: Figure out what I was thinking
+TODO: Split out dispatch
+"""
 
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -19,6 +27,11 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
     Attributes:
         app (FastAPI): The base app through which we route exception messaging
         settings (dict): Settings instance to load optional pushover notification
+
+    Methods:
+        init: Loads in settings and connect main
+        dispatch: ???
+
     """
 
     def __init__(self, app):
@@ -38,10 +51,18 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         """
         Dispatches Error message through multiple channels
 
+        When an exception does happen, it collects information on which request was made
+        Includes info such as endpoint, error type, and message.
+
+        In case there is an error with capturing/sending the error, that is captured too.
+        This for when passing through a third-party which has its own error messaging mechanism.
+
+        Optionally, also sends the exception to Pushover if configured.
+
         Args:
             request (#TODO): I assume it's the next exception in the queue
             callnext? (#TODO): I assume it's a... no clue
-             ():
+                ():
 
         Returns:
             dict: error messaging

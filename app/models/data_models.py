@@ -107,7 +107,7 @@ class ReferenceData(BaseModel):
 
     def file_sync(self):
         """
-        Writes data model to a local file for reference
+        Writes data model to a local file for cold data.
 
         Args:
             None
