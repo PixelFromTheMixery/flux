@@ -1,12 +1,23 @@
-"""General endpoints not associated with any service"""
+"""
+General endpoints not associated with any service
+
+Health endpoint and detached endpoint, sometimes used for setup
+
+Variabless:
+    router (APIRouter): object that handles path mapping
+
+Methods:
+    get_health_endpoint: Used for docker and sanity checks
+"""
+
 from http import HTTPStatus
 
 from fastapi import APIRouter
 
 # from utils.logger import logger
 
-#from settings import generate_settings
-#from schedule import scheduler
+# from settings import generate_settings
+# from schedule import scheduler
 
 router = APIRouter()
 
@@ -19,5 +30,4 @@ async def get_health_endpoint():
         dict: status:okay but could be anything
     """
 
-    """Health Endpoint, should always return 200 OK"""
     return {"status": "ok"}

@@ -1,4 +1,13 @@
-"""Central Hub for routing endpoints"""
+"""
+Central Hub for router pathing
+
+Variables:
+    router (APIRouter): Router object that performs path mapping
+    settings (Settings): Turn routes on and off according to settings
+
+TODO: Add routes lol
+"""
+
 from fastapi import APIRouter
 
 from . import (

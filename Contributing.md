@@ -50,7 +50,7 @@ Doc String Snippets
 			"",
 			"${2:Detailed explanation of the module's purpose and functionality.}",
 			"",
-			"Attributes:",
+			"Variables:",
 			"    ${3:variable} (${4:type}): ${5:Description of a module-level variable.}",
 			"",
 			"Classes:",

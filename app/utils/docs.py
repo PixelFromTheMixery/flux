@@ -1,4 +1,13 @@
-"""FastAPI doc variables"""
+"""
+FastAPI doc variables
+
+Decluttering main.py by moving mappings to dedicated module
+
+Variables:
+    DESCRIPTION (str): Description of FastAPI defintions.
+    TAGS (str): Mapping of endpoints by tag
+
+"""
 
 DESCRIPTION = """
 ### Sections

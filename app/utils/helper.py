@@ -1,4 +1,13 @@
-"""Module for managing non-specific methods"""
+"""
+Module for managing non-specific methods
+
+Helper can be called by anything due to no dependencies
+
+Classes:
+    Helper: Encapsulating class
+
+TODO: Move deeplink to anytype utils when ready
+"""
 
 import yaml
 
@@ -30,7 +39,6 @@ class Helper:
                 f.write(yaml.safe_dump(data, sort_keys=False))
             return yaml.safe_load(f)
 
-    # TODO: Move to anytype utils when ready
     def make_deeplink(self, space_id: str, object_id: str):
         """Builds deeplinks for link purposes"""
         return f"https://object.any.coop/{object_id}?spaceId={space_id}"

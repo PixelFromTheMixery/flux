@@ -1,4 +1,21 @@
-"""Data model for local caching"""
+"""
+Collection of Pydantic Data Classes for handling the difference between integrations.
+
+Following integrations are currently supported:
+    - Anytype
+
+Classes:
+    ReferenceData: Root dictionary for data access and storage
+
+    # Anytype
+        SpaceData: Space name, dictionary of types, props, and queries.
+        QueryData: List of name:id mapings of the views
+        TypeData: Basic type info with templates
+        OptionData: Option in select or multi-select property
+        PropData: Property object with options
+
+TODO: Map out Traggo mutation
+"""
 
 from typing import Dict, Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -13,7 +30,7 @@ class QueryData(BaseModel):
 
     Attributes:
         id (str): anytype object id
-        model_config: ConfigDict, used for adding any extra attributes
+        model_config(ConfigDict): ConfigDict, used for adding view names to id for automation
     """
 
     id: str
@@ -107,12 +124,7 @@ class ReferenceData(BaseModel):
 
     def file_sync(self):
         """
-        Writes data model to a local file for cold data.
-
-        Args:
-            None
-        Returns:
-            None
+        Writes data model to a local file for cold data between loads
         """
         logger.info("File sync")
         Helper.read_write("data/data.yaml", "w", self.model_dump())

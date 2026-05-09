@@ -1,4 +1,13 @@
-"""Models to be used by the settings module"""
+"""
+Pydantic models for app settings
+
+Classes:
+    AnytypeSettings: Anytype settings for automations and tracking
+    SPSettings: Super Productivity settings for automation and flow
+    TraggoSettings: Traggo settings for automation and tracking
+
+TODO: SP and Traggo
+"""
 
 from pydantic import BaseModel
 
