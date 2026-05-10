@@ -1,3 +1,4 @@
+# region Docs
 """
 FastAPI doc variables
 
@@ -8,6 +9,7 @@ Variables:
     TAGS (str): Mapping of endpoints by tag
 
 """
+# endregion
 
 DESCRIPTION = """
 ### Sections

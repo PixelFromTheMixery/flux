@@ -1,3 +1,4 @@
+# region Docs
 """
 Main entry point for AnyTYpe Automation API
 
@@ -11,6 +12,7 @@ Methods:
 
 TODO: Move exception middleware here?
 """
+# endregion
 
 from http import HTTPStatus
 
@@ -26,12 +28,14 @@ from . import routers
 
 
 def create_app() -> FastAPI:
+    # region Docs
     """
     Configures the base settings for the app, connecting routes and middlewares
 
     Returns:
         fastapi_app: configured application for usage
     """
+    # endregion
 
     fastapi_app = FastAPI(
         title="AnyType Automation",

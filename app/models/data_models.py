@@ -1,3 +1,4 @@
+# region Docs
 """
 Collection of Pydantic Data Classes for handling the difference between integrations.
 
@@ -17,6 +18,7 @@ Classes:
 TODO: Map out Traggo mutation
 TODO: move templates into its own Data Class
 """
+# endregion
 
 from typing import Dict, Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -26,6 +28,7 @@ from ..utils.logger import logger
 
 
 class QueryData(BaseModel):
+    # region Docs
     """
     Anytype query object reference
 
@@ -34,11 +37,14 @@ class QueryData(BaseModel):
         model_config(ConfigDict): ConfigDict, used for adding view names to id for automation
     """
 
+    # endregion
+
     id: str
     model_config = ConfigDict(extra="allow")
 
 
 class TypeData(BaseModel):
+    # region Docs
     """
     Anytype type objects with template reference
 
@@ -48,12 +54,15 @@ class TypeData(BaseModel):
         templates (Dict[str, str]): associated templates, in the form of name:object_id
     """
 
+    # endregion
+
     id: str
     key: str
     templates: Optional[Dict[str, str]] = None
 
 
 class OptionData(BaseModel):
+    # region Docs
     """
     Option of a select or multi-select Anytype property
     Note: duplicate keys make an error, even across properties
@@ -67,6 +76,8 @@ class OptionData(BaseModel):
         ]
     """
 
+    # endregion
+
     id: str
     key: str
     name: str
@@ -74,6 +85,7 @@ class OptionData(BaseModel):
 
 
 class PropData(BaseModel):
+    # region Docs
     """
     Anytype Property object shape
 
@@ -87,6 +99,8 @@ class PropData(BaseModel):
         options (OptionData): list of options on available on the tag
     """
 
+    # endregion
+
     id: str
     key: str
     name: str
@@ -95,6 +109,7 @@ class PropData(BaseModel):
 
 
 class SpaceData(BaseModel):
+    # region Docs
     """
     Collection of above Anytype data by space.
 
@@ -105,6 +120,8 @@ class SpaceData(BaseModel):
         props (PropData): Space Props
     """
 
+    # endregion
+
     id: str
 
     queries: Dict[str, QueryData] = Field(default_factory=dict)
@@ -113,6 +130,7 @@ class SpaceData(BaseModel):
 
 
 class ReferenceData(BaseModel):
+    # region Docs
     """
     Top-level key map to integrations.
 
@@ -120,11 +138,15 @@ class ReferenceData(BaseModel):
         anytype (Dict[str, Spacedata]): Per space reference data
     """
 
+    # endregion
+
     anytype: Dict[str, SpaceData] = {}
 
     def file_sync(self):
+        # region Docs
         """
         Writes data model to a local file for cold data between loads
         """
         logger.info("File sync")
         Helper.read_write("data/data.yaml", "w", self.model_dump())
+        # endregion

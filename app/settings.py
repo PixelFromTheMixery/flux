@@ -1,3 +1,4 @@
+# region Docs
 """
 Settings for API
 
@@ -13,6 +14,7 @@ Methods:
 
 TODO: Move file update mechanism in here as it is not used anywhere else
 """
+# endregion
 
 from functools import lru_cache
 from pathlib import Path
@@ -26,6 +28,7 @@ from .models.data_models import ReferenceData
 
 
 class ConfigSettings(BaseModel):
+    # region Docs
     """
     App configuration
     Attributes:
@@ -36,6 +39,8 @@ class ConfigSettings(BaseModel):
         anytype(AnytypeSettings): Settings for Anytype
         trago(TraggoSettings): Settings for Traggo
     """
+
+    # endregion
 
     # General
     local: Annotated[bool, Field()] = True
@@ -51,6 +56,7 @@ class ConfigSettings(BaseModel):
 
 
 class Settings(BaseModel):
+    # region Docs
     """
     The Top-Level Singleton Registry
 
@@ -59,12 +65,15 @@ class Settings(BaseModel):
         data (ReferenceData): Reference data for reducing path discovery
     """
 
+    # endregion
+
     config: ConfigSettings = Field(default_factory=ConfigSettings)
     data: ReferenceData = Field(default_factory=ReferenceData)
 
 
 @lru_cache
 def generate_settings() -> Settings:
+    # region Docs
     """
     Constructor for the irregular sources
 
@@ -110,6 +119,7 @@ def read_write(path, method, data=None):
     Returns:
         dict: from data if provided
     """
+    # endregion
 
     with open(path, method, encoding="utf-8") as f:
         if data:

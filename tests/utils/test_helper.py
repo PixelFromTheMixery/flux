@@ -5,16 +5,19 @@ from app.utils.helper import Helper
 
 @pytest.fixture
 def helper():
+    # region Docs
     """
     Brings in Helper for testing
     Returns:
         Helper: holds methods to test
     """
+    # endregion
 
     return Helper()
 
 
 def test_make_deeplink(helper, anytype_test_space_id):
+    # region Docs
     """
     Generation of anytype deeplink
 
@@ -27,6 +30,7 @@ def test_make_deeplink(helper, anytype_test_space_id):
     Expected outputs:
         result (str): anytype deeplink.
     """
+    # endregion
 
     deeplink_page = "bafyreiahoc6a3vq7mwoufsvt445twijviag2g6vzbw4mi66zhr4oyz4fkq"
     result = helper.make_deeplink(anytype_test_space_id, deeplink_page)

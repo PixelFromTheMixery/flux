@@ -1,3 +1,4 @@
+# region Docs
 """
 General endpoints not associated with any service
 
@@ -9,6 +10,7 @@ Variables:
 Methods:
     get_health_endpoint: Used for docker and sanity checks
 """
+# endregion
 
 from http import HTTPStatus
 
@@ -24,10 +26,12 @@ router = APIRouter()
 
 @router.get("/health", status_code=HTTPStatus.ACCEPTED)
 async def get_health_endpoint():
+    # region Docs
     """
     Endpoint for health check
     Returns:
         dict: status:okay but could be anything
     """
+    # endregion
 
     return {"status": "ok"}

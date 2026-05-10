@@ -1,3 +1,4 @@
+# region Docs
 """
 Exception Handler for Flux.
 
@@ -7,6 +8,7 @@ Classes:
 TODO: Figure out what I was thinking
 TODO: Split out dispatch
 """
+# endregion
 
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -21,6 +23,7 @@ from ..settings import generate_settings
 
 
 class ExceptionMiddleware(BaseHTTPMiddleware):
+    # region Docs
     """
     File read and write combo for yaml sync to local instance
 
@@ -29,13 +32,17 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         settings (dict): Settings instance to load optional pushover notification
     """
 
+    # endregion
+
     def __init__(self, app):
+        # region Docs
         """
         Loader for exception Middleware
 
         Args:
             app (FastAPI): app, from main, that exceptions pass through
         """
+        # endregion
 
         super().__init__(app)
         settings = generate_settings()
@@ -43,6 +50,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         #   self.pushover = PushoverUtils()
 
     async def dispatch(self, request, call_next):
+        # region Docs
         """
         Dispatches Error message through multiple channels
 
@@ -66,6 +74,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
             Exception(2): If there's an error with sending the error
             Exception(3): Error with sending pushover notification of the error
         """
+        # endregion
 
         try:
             response = await call_next(request)

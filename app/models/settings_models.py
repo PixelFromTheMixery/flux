@@ -1,3 +1,4 @@
+# region Docs
 """
 Pydantic models for app settings
 
@@ -8,11 +9,13 @@ Classes:
 
 TODO: SP and Traggo
 """
+# endregion
 
 from pydantic import BaseModel
 
 
 class AnytypeSettings(BaseModel):
+    # region Docs
     """
     Settings for Anytype
 
@@ -20,10 +23,13 @@ class AnytypeSettings(BaseModel):
         space_id (str): target space to interact with
     """
 
+    # endregion
+
     space_id: str
 
 
 class SPSettings(BaseModel):
+    # region Docs
     """
     Settings for Super Productivity
 
@@ -31,13 +37,18 @@ class SPSettings(BaseModel):
         sync_file? (str): may moved to env for volume mounting
     """
 
+    # endregion
+
     sync_file: str
 
 
 class TraggoSettings(BaseModel):
+    # region Docs
     """
     Settings for Traggo
 
     Attributes:
         Unknown
     """
+
+    # endregion

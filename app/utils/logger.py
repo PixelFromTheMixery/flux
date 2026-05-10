@@ -1,3 +1,4 @@
+# region Docs
 """
 Dedicated Logging Module
 
@@ -7,6 +8,7 @@ Variables:
     logHandler (StreamHandler): Tool for handling the shape of the log
     logger (getLogger): Actual logger for usage
 """
+# endregion
 
 import logging
 from pythonjsonlogger import json
