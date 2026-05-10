@@ -5,6 +5,7 @@ Doc String Snippets
 	"Python Method Docstring": {
 		"prefix": "pydoc",
 		"body": [
+			"# region Docs",
 			"\"\"\"",
 			"${1:Summary of the function.}",
 			"",
@@ -18,13 +19,33 @@ Doc String Snippets
 			"Raises:",
 			"    ${13:Exception}: ${14:Conditions.}",
 			"\"\"\"",
-			"$0"
+			"# endregion",
+			"$0",
 		],
 		"description": "Custom Google-style method docstring"
+	},
+	"Python Testing Docstring": {
+		"prefix": "pydoctest",
+		"body": [
+			"# region Docs",
+			"\"\"\"",
+			"${1:Brief description of the test.}",
+			"",
+			"Notes: ${2:Any nuances or references.}",
+			"",
+			"Inputs:",
+			"    ${3:variable} (${4:type}): ${5:Description of an input.}",
+			"",
+			"Expected result: (${6:type}): ${7:Description of an output.}",
+			"\"\"\"",
+			"# endregion",
+			"$0",
+		],
 	},
 	"Python Class Docstring": {
 		"prefix": "pydocclass",
 		"body": [
+			"# region Docs",
 			"\"\"\"",
 			"${1:Summary of Class.}",
 			"",
@@ -33,11 +54,8 @@ Doc String Snippets
 			"    ${5:att2} (${6:type}): ${7:Description of att2.}",
 			"    ${8:att3} (${9:type}): ${10:Description of att3.}",
 			"",
-			"Methods:",
-			"    ${11:meth1}: ${12:Description of meth1}",
-			"    ${13:meth2}: ${14:Description of meth2}",
-			"    ${15:meth3}: ${16:Description of meth3}",
 			"\"\"\"",
+			"# endregion",
 			"$0",
 		],
 		"description": "Custom Google-style class docstring"
@@ -45,6 +63,7 @@ Doc String Snippets
 	"Python Module Docstring": {
 		"prefix": "pydocmodule",
 		"body": [
+			"# region Docs",
 			"\"\"\"",
 			"${1:Brief description of the module.}",
 			"",
@@ -59,11 +78,12 @@ Doc String Snippets
 			"Methods:",
 			"    ${8:method}: ${9:Description of a module-level method.}",
 			"",
-			"TODO: ${10:Upcoming task or fix.}",
+			"#TODO: ${10:Upcoming task or fix.}",
 			"\"\"\"",
-			"$0"
+			"# endregion",
+			"$0",
 		],
 		"description": "Custom Google-style method docstring"
-	}
+	},
 }
 ```
