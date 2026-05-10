@@ -20,7 +20,7 @@ class Helper:
 
     # endregion
 
-    def make_deeplink(self, space_id: str, object_id: str):
+    def make_deeplink(self, space_id: str, object_id: str) -> str:
         # region Docs
         """
         Generates an anytype link that brings you directly to the app

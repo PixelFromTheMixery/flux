@@ -3,8 +3,7 @@
 Base settings and fixtures for other tests
 
 Methods:
-
-#TODO: Upcoming task or fix.
+    anytype_test_space_id
 """
 # endregion
 
@@ -12,7 +11,8 @@ import pytest
 
 
 @pytest.fixture
-def anytype_test_space_id():
+def anytype_test_space_id() -> str:
+    # region Docs
     """
     Supplies human-unreadable string of the testing space space id
 

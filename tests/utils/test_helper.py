@@ -1,10 +1,21 @@
+# region Docs
+"""
+Tests for the helper module
+
+Tests:
+    test_make_deeplink
+
+#TODO: Upcoming task or fix.
+"""
+# endregion
+
 import pytest
 
 from app.utils.helper import Helper
 
 
 @pytest.fixture
-def helper():
+def helper() -> Helper:
     # region Docs
     """
     Brings in Helper for testing
@@ -16,7 +27,7 @@ def helper():
     return Helper()
 
 
-def test_make_deeplink(helper, anytype_test_space_id):
+def test_make_deeplink(helper, anytype_test_space_id) -> None:
     # region Docs
     """
     Generation of anytype deeplink

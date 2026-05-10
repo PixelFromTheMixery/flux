@@ -51,7 +51,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(routers.router)
 
     @fastapi_app.get("/", tags=["general"], status_code=HTTPStatus.ACCEPTED)
-    async def get_root():
+    async def get_root() -> dict:
         """Root Endpoint"""
         logger.info("Root endpoint called")
         return {"Flux": "Fluctuating data to create synergies"}

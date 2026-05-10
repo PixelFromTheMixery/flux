@@ -1,3 +1,4 @@
+# region Docs
 """
 Central Hub for router pathing
 
@@ -14,7 +15,7 @@ from . import (
     general_router,
     # anytype_router
 )
-
+# endregion
 
 # from settings import generate_settings
 

@@ -107,7 +107,7 @@ def generate_settings() -> Settings:
     )
 
 
-def read_write(path, method, data=None):
+def read_write(path, method, data=None) -> dict:
     """
     File read and write combo for yaml sync to local instance.
 

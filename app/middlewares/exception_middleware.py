@@ -10,6 +10,9 @@ TODO: Split out dispatch
 """
 # endregion
 
+from typing import Callable
+
+from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 import requests
@@ -34,7 +37,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
 
     # endregion
 
-    def __init__(self, app):
+    def __init__(self, app) -> None:
         # region Docs
         """
         Loader for exception Middleware
@@ -49,7 +52,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         # if not settings.config.local:
         #   self.pushover = PushoverUtils()
 
-    async def dispatch(self, request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # region Docs
         """
         Dispatches Error message through multiple channels
@@ -63,12 +66,11 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         Optionally, also sends the exception to Pushover if configured.
 
         Args:
-            request (TODO): I assume it's the next exception in the queue
-            callnext? (TODO): I assume it's a... no clue
-                ():
+            request (HTTPRequest): Incoming FastAPI request
+            callnext? (Callable): Process that happened earlier
 
         Returns:
-            dict: error messaging
+            dict: HTTP response from the app or JSON response with the error
         Raises:
             Exception: Any error in the software
             Exception(2): If there's an error with sending the error
@@ -92,7 +94,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
                 except Exception:
                     detail = exc.response.text[:100]
 
-            logger.error(f"Unhandled exception at {request.url.path}: {detail}")
+            logger.error("Unhandled exception at %s: %s", request.url.path, detail)
 
             content = {
                 "status": "error",
@@ -105,5 +107,5 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
                 self.pushover.send_message(
                     f"API Error: {error_type}", detail, priority=1
                 )
-            except:
+            except Exception:
                 return JSONResponse(content, 500)

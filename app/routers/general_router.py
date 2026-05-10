@@ -25,7 +25,7 @@ router = APIRouter()
 
 
 @router.get("/health", status_code=HTTPStatus.ACCEPTED)
-async def get_health_endpoint():
+async def get_health_endpoint() -> dict:
     # region Docs
     """
     Endpoint for health check

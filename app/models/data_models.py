@@ -142,7 +142,7 @@ class ReferenceData(BaseModel):
 
     anytype: Dict[str, SpaceData] = {}
 
-    def file_sync(self):
+    def file_sync(self) -> None:
         # region Docs
         """
         Writes data model to a local file for cold data between loads
