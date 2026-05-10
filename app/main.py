@@ -1,4 +1,16 @@
-"""Main entry point for AnyTYpe Automation API"""
+"""
+Main entry point for AnyTYpe Automation API
+
+Base FastAPI application with scheduled tasks, exception middleware.
+
+Variables:
+    app (FastAPI): Server which runs the API
+
+Methods:
+    create_app: Configuration
+
+TODO: Move exception middleware here?
+"""
 
 from http import HTTPStatus
 
@@ -14,7 +26,13 @@ from . import routers
 
 
 def create_app() -> FastAPI:
-    """Configures the server"""
+    """
+    Configures the base settings for the app, connecting routes and middlewares
+
+    Returns:
+        fastapi_app: configured application for usage
+    """
+
     fastapi_app = FastAPI(
         title="AnyType Automation",
         description=DESCRIPTION,

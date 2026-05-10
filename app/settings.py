@@ -1,4 +1,20 @@
-"""Settings for API"""
+"""
+Settings for API
+
+Processor of the config.yaml file, which will configure the way the app functions at runtime
+
+Variables:
+    helper (Helper): Imported for the read writ file class, but might just want to move it into here.
+
+Classes:
+    ConfigSettings: Pydantic model for config settings file
+    Settings: Root for config settings and reference data
+
+Methods:
+    generate_settings: @lru_cached method that fetches the same settings instance
+
+TODO: Move file update mechanism in here as it is not used anywhere else
+"""
 
 from functools import lru_cache
 from pathlib import Path
