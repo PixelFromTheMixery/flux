@@ -9,12 +9,13 @@ Classes:
 
     # Anytype
         SpaceData: Space name, dictionary of types, props, and queries.
-        QueryData: List of name:id mapings of the views
+        QueryData: List of name:id mappings of the views
         TypeData: Basic type info with templates
         OptionData: Option in select or multi-select property
         PropData: Property object with options
 
 TODO: Map out Traggo mutation
+TODO: move templates into its own Data Class
 """
 
 from typing import Dict, Optional
@@ -39,7 +40,6 @@ class QueryData(BaseModel):
 
 class TypeData(BaseModel):
     """
-    # TODO: move templates into its own Data Class
     Anytype type objects with template reference
 
     Attributes:

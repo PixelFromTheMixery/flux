@@ -3,7 +3,7 @@ General endpoints not associated with any service
 
 Health endpoint and detached endpoint, sometimes used for setup
 
-Variabless:
+Variables:
     router (APIRouter): object that handles path mapping
 
 Methods:

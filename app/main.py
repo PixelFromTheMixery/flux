@@ -7,7 +7,7 @@ Variables:
     app (FastAPI): Server which runs the API
 
 Methods:
-    create_app: Configuration
+    create_app: Build-time Configuration
 
 TODO: Move exception middleware here?
 """
@@ -54,6 +54,5 @@ def create_app() -> FastAPI:
 
     return fastapi_app
 
+
 app = create_app()
-
-

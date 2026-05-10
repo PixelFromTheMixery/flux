@@ -38,7 +38,11 @@ dev = [
     "black",              # Code formatter
     "ruff",               # Fast linting  
     "pytest",             # Testing framework
+    "pylint-pytest"       # Prevent Pylint from worrying about pytest
 ]
+
+[tool.pylint.MASTER]
+load-plugins = "pylint_pytest"
 
 [tool.pylint."MESSAGES CONTROL"]
 disable = [
@@ -54,3 +58,7 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+preview = true
+
+[pytest]
+addopts = "-ra -q"

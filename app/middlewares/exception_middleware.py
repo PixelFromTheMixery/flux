@@ -27,11 +27,6 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
     Attributes:
         app (FastAPI): The base app through which we route exception messaging
         settings (dict): Settings instance to load optional pushover notification
-
-    Methods:
-        init: Loads in settings and connect main
-        dispatch: ???
-
     """
 
     def __init__(self, app):
@@ -60,8 +55,8 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         Optionally, also sends the exception to Pushover if configured.
 
         Args:
-            request (#TODO): I assume it's the next exception in the queue
-            callnext? (#TODO): I assume it's a... no clue
+            request (TODO): I assume it's the next exception in the queue
+            callnext? (TODO): I assume it's a... no clue
                 ():
 
         Returns:
