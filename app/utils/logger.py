@@ -11,11 +11,13 @@ Variables:
 # endregion
 
 import logging
-from pythonjsonlogger import json
 
-logHandler = logging.StreamHandler()
-logHandler.setFormatter(json.JsonFormatter("%(asctime)s [%(levelname)s] %(message)s"))
-
-logger = logging.getLogger()
-logger.addHandler(logHandler)
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("flux")
+if not logger.handlers:
+    h = logging.StreamHandler()
+    h.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(name)s:%(message)s")
+    )
+    logger.addHandler(h)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
