@@ -9,6 +9,8 @@ Methods:
 
 import pytest
 
+from app.settings import generate_settings
+
 
 @pytest.fixture
 def anytype_test_space_id() -> str:
@@ -21,3 +23,19 @@ def anytype_test_space_id() -> str:
     """
     # endregion
     return "bafyreifepifytna2qjc73kcpk56bdz5remhmtj43iqz3eigdw2ypy64k4e.2bx9tjqqte21g"
+
+
+@pytest.fixture(autouse=True)
+def clear_settings_cache():
+    # region Docs
+    """
+    Clears settings before and after every test
+
+    Args:
+        autuse (bool): Automatically apply every test, default True
+    """
+    # endregion
+
+    generate_settings.cache_clear()
+    yield
+    generate_settings.cache_clear()

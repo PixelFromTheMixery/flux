@@ -7,6 +7,9 @@ Classes:
     SPSettings: Super Productivity settings for automation and flow
     TraggoSettings: Traggo settings for automation and tracking
 
+    Integrations: Collection of all below integrations
+
+
 TODO: SP and Traggo
 """
 # endregion
@@ -52,3 +55,9 @@ class TraggoSettings(BaseModel):
     """
 
     # endregion
+
+
+class Integrations(BaseModel):
+    anytype: AnytypeSettings
+    superprod: SPSettings
+    traggo: TraggoSettings

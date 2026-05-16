@@ -1,4 +1,7 @@
 # Testing Plan
+extensions? 
+TODO: Figure out how to make consistent between CLI and UI
+
 
 ## Exclusions
 The following code snippets will not be tested for the following reasons:

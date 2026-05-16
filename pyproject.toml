@@ -19,16 +19,15 @@ keywords = ["anytype", "super-Productivity", "traggo", "api", "fastapi"]
 
 # Core dependencies (Third-party packages only)
 dependencies = [
+    "apscheduler",        # Background jobs
     "fastapi",            # Web framework
     "pydantic",           # Data validation
     "pydantic_settings",  # Singleton
-    "uvicorn",            # ASGI server
-    "requests",           # HTTP calls
     "python-dateutil",    # relativedelta
-    "python-dotenv",      # load_dotenv
+#    "pytokens",           # Used in AnyTypeUtils
     "pyyaml",             # YAML support
-    "pytokens",           # Used in AnyTypeUtils
-    "apscheduler",        # Background jobs
+    "requests",           # HTTP calls
+    "uvicorn",            # ASGI server
 ]
 
 # uv sync --extra dev
@@ -37,7 +36,8 @@ dev = [
     "black",              # Code formatter
     "ruff",               # Fast linting  
     "pytest",             # Testing framework
-    "pylint-pytest"       # Prevent Pylint from worrying about pytest
+    "pytest-cov",         # Test Coverage
+    "pylint-pytest",      # Prevent Pylint from worrying about pytest
 ]
 
 [tool.pylint.MASTER]
@@ -59,5 +59,13 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 preview = true
 
-[pytest]
+[tool.pytest.ini_options]
 addopts = "-ra -q"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+markers = [
+  "read: tests that validate read-only behavior",
+  "integration: integration tests"
+]
+filterwarnings = ["error"]

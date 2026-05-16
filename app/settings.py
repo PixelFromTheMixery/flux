@@ -10,78 +10,50 @@ Classes:
 
 Methods:
     generate_settings: @lru_cached method that fetches the same settings instance
-    read_write_file: interacts with files for cold storage across loads
 
 TODO: Move file update mechanism in here as it is not used anywhere else
 """
 # endregion
 
 from functools import lru_cache
-from pathlib import Path
-from typing import Annotated, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import yaml
 
-from .models.settings_models import AnytypeSettings, SPSettings, TraggoSettings
-from .models.data_models import ReferenceData
+from .models.settings_models import Integrations
 
 
-class ConfigSettings(BaseModel):
+class Settings(BaseModel):
     # region Docs
     """
     App configuration
     Attributes:
         local(bool) = True: Flag for development mode, turns off scheduler and notifications
         api_addr(str): Web address at which API is running, for inner use URL generation
-        ### Integrations
-        sp(SPSettings): Settings for Super Productivity
-        anytype(AnytypeSettings): Settings for Anytype
-        trago(TraggoSettings): Settings for Traggo
+        api_port (str) = port on which API runs?
+        db_file (str) = path to file that glues everything together
+        integrations(Integrations) = Integration settings capsule
+
     """
 
     # endregion
 
     # General
-    local: Annotated[bool, Field()] = True
+    local: bool = True
 
-    api_addr: Annotated[str, Field()]
+    api_addr: str = "https://127.0.0.1"
+    api_port: str = "8090"
 
+    db_file: str = "data/data.db"
     # Integrations
-    sp: Annotated[Optional[SPSettings, Field()]] = None
 
-    anytype: Annotated[Optional[AnytypeSettings, Field()]] = None
-
-    traggo: Annotated[Optional[TraggoSettings, Field()]] = None
-
-
-class Settings(BaseModel):
-    # region Docs
-    """
-    The Top-Level Singleton Registry
-
-    Attributes:
-        config (ConfigSettings): Runtime configuration
-        data (ReferenceData): Reference data for reducing path discovery
-    """
-
-    # endregion
-
-    config: ConfigSettings = Field(default_factory=ConfigSettings)
-    data: ReferenceData = Field(default_factory=ReferenceData)
+    integrations: Integrations = {}
 
 
 @lru_cache
 def generate_settings() -> Settings:
     # region Docs
     """
-    Constructor for the irregular sources
-
-    Args:
-        arg1 (type): Description of arg1.
-        arg2 (type): Description of arg2.
-        arg3 (type): Description of arg3.
-
     Returns:
         Settings: Distributed settings object for global use
     Raises:
@@ -89,39 +61,7 @@ def generate_settings() -> Settings:
     """
 
     try:
-        config_yaml = read_write("config.yaml", "r")
+        with open("settings.yaml", "r", encoding="UTF-8") as f:
+            return Settings(**yaml.safe_load(f))
     except FileNotFoundError as exc:
-        raise FileNotFoundError("config.yaml required") from exc
-    data_path = "data/data.yaml"
-    try:
-        data_yaml = read_write(data_path, "r")
-    except FileNotFoundError:
-        make_dir = Path(data_path).parent
-        make_dir.mkdir(parents=True, exist_ok=True)
-        print("Reference data file requires generation")
-        data_yaml = {}
-
-    return Settings(
-        config=ConfigSettings(**config_yaml),
-        data=ReferenceData(**data_yaml),
-    )
-
-
-def read_write(path, method, data=None) -> dict:
-    """
-    File read and write combo for yaml sync to local instance.
-
-    Args:
-        path (str): path to file to interact with.
-        method (str): "r" or "w" for with open.
-        data (dict): data to store into yaml.
-
-    Returns:
-        dict: from data if provided
-    """
-    # endregion
-
-    with open(path, method, encoding="utf-8") as f:
-        if data:
-            f.write(yaml.safe_dump(data, sort_keys=False))
-        return yaml.safe_load(f)
+        raise FileNotFoundError("settings.yaml required") from exc

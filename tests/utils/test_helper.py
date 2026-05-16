@@ -1,11 +1,12 @@
 # region Docs
 """
-Tests for the helper module
+Module: /app/utils/helper.py
+
+Notes: will likely be deleted soon with the addition of anypython
 
 Tests:
-    test_make_deeplink
+    make_deeplink
 
-#TODO: Upcoming task or fix.
 """
 # endregion
 

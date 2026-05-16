@@ -2,7 +2,7 @@ Doc String Snippets
 
 ``` JSON
 {
-	"Python Method Docstring": {
+"Python Method Docstring": {
 		"prefix": "pydoc",
 		"body": [
 			"# region Docs",
@@ -79,6 +79,27 @@ Doc String Snippets
 			"    ${8:method}: ${9:Description of a module-level method.}",
 			"",
 			"#TODO: ${10:Upcoming task or fix.}",
+			"\"\"\"",
+			"# endregion",
+			"$0",
+		],
+		"description": "Custom Google-style method docstring"
+	},
+	"Python Testing Module Docstring": {
+		"prefix": "pydoctestmodule",
+		"body": [
+			"# region Docs",
+			"\"\"\"",
+			"Module: ${1:Module path.}",
+			"",
+			"Notes: ${2: Any nuances worth mentioning}",
+			"",
+			"Tests:",
+			"    ${3:Test1}",
+			"    ${4:Test2}",
+			"    ${5:Test3}",
+			"",
+			"#TODO: ${6:Upcoming task or fix.}",
 			"\"\"\"",
 			"# endregion",
 			"$0",
