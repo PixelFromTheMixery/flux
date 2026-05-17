@@ -47,21 +47,42 @@ class Settings(BaseModel):
     db_file: str = "data/data.db"
     # Integrations
 
-    integrations: Integrations = {}
+    integrations: Integrations = Integrations()
 
 
 @lru_cache
-def generate_settings() -> Settings:
+def load_settings_from_file() -> Settings:
     # region Docs
+
     """
     Returns:
         Settings: Distributed settings object for global use
     Raises:
         FileNotFoundError: If the config.yaml is not found.
     """
+    # endregion
 
     try:
         with open("settings.yaml", "r", encoding="UTF-8") as f:
             return Settings(**yaml.safe_load(f))
     except FileNotFoundError as exc:
         raise FileNotFoundError("settings.yaml required") from exc
+
+
+def generate_settings(supplied: dict = None) -> Settings:
+    # region Docs
+    """
+    Build Settings from dict if provided, otherwise from file
+
+    Args:
+        supplied (dict): settings dict, usually for testing
+
+    Returns:
+        Settings: from code
+    """
+    # endregion
+
+    if supplied:
+        return Settings(**supplied)
+
+    return load_settings_from_file()

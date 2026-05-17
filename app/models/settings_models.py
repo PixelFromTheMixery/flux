@@ -14,6 +14,8 @@ TODO: SP and Traggo
 """
 # endregion
 
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -58,6 +60,20 @@ class TraggoSettings(BaseModel):
 
 
 class Integrations(BaseModel):
-    anytype: AnytypeSettings
-    superprod: SPSettings
-    traggo: TraggoSettings
+    # region Docs
+    """
+    Collective Class for all above integrations
+
+    Attributes:
+        testing (dict): object to perform tests on
+
+        anytype (AnytypeSettings): N/A
+        superprod (SPSettings): N/A
+        traggo (TraggoSettings): N/A
+
+    """
+
+    # endregion
+    anytype: Optional[AnytypeSettings] = None
+    superprod: Optional[SPSettings] = None
+    traggo: Optional[TraggoSettings] = None
