@@ -7,9 +7,14 @@ Classes:
     SPSettings: Super Productivity settings for automation and flow
     TraggoSettings: Traggo settings for automation and tracking
 
+    Integrations: Collection of all below integrations
+
+
 TODO: SP and Traggo
 """
 # endregion
+
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -52,3 +57,23 @@ class TraggoSettings(BaseModel):
     """
 
     # endregion
+
+
+class Integrations(BaseModel):
+    # region Docs
+    """
+    Collective Class for all above integrations
+
+    Attributes:
+        testing (dict): object to perform tests on
+
+        anytype (AnytypeSettings): N/A
+        superprod (SPSettings): N/A
+        traggo (TraggoSettings): N/A
+
+    """
+
+    # endregion
+    anytype: Optional[AnytypeSettings] = None
+    superprod: Optional[SPSettings] = None
+    traggo: Optional[TraggoSettings] = None
