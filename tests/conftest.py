@@ -7,9 +7,11 @@ Methods:
 """
 # endregion
 
+from fastapi.testclient import TestClient
 import pytest
 
 from app.settings import generate_settings
+from app.main import app
 
 
 @pytest.fixture
@@ -39,3 +41,9 @@ def clear_settings_cache():
     generate_settings.cache_clear()
     yield
     generate_settings.cache_clear()
+
+
+@pytest.fixture(name="client")
+def client_fixture():
+    with TestClient(app) as client:
+        yield client

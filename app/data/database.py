@@ -8,7 +8,13 @@ class RefDB:
     def __init__(self):
         self.table_name = "id_maps"
         self.settings = generate_settings()
+        self.conn = sqlite3.connect(self.settings.db_file)
+        self.conn.row_factory = sqlite3.Row
         self.setup_database()
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
 
     def execute_sql(
         self,
@@ -18,16 +24,15 @@ class RefDB:
         read: bool = False,
     ):
         try:
-            with sqlite3.connect(self.settings.db_file) as conn:
-                conn.row_factory = sqlite3.Row
-                cur = conn.execute(query, params)
-                if read:
-                    rows = cur.fetchall()
-                    logger.info(query_summary)
-                    return rows
-                conn.commit()
+            cur = self.conn.execute(query, params)
+            if read:
+                rows = cur.fetchall()
                 logger.info(query_summary)
-        except sqlite3.OperationalError as e:
+                return rows
+            self.conn.commit()
+            logger.info(query_summary)
+
+        except sqlite3.Error as e:
             logger.exception("DB Error: %s", e)
             raise e
 

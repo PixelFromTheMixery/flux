@@ -1,31 +1,36 @@
 from types import SimpleNamespace
 import sqlite3
+import tracemalloc
+import warnings
 
 import pytest
 
 from app.data.database import RefDB
 
-PATH = "app.data.database."
+
+tracemalloc.start()
+warnings.filterwarnings("default", category=ResourceWarning)
 
 
-@pytest.fixture(scope="session", autouse=True, name="mock_db")
+@pytest.fixture(name="mock_db")
 def manage_db_connection(monkeypatch, tmp_path, integrations=("anytype", "traggo")):
     settings = SimpleNamespace(
         db_file=str(tmp_path / "test.db"), integrations=list(integrations)
     )
-    monkeypatch.setattr(PATH + "generate_settings", lambda: settings)
+    monkeypatch.setattr("app.data.database.generate_settings", lambda: settings)
     db = RefDB()
-    db.connect()
 
-    yield
+    yield db
 
-    db.close_all_connections()
+    db.close()
 
 
 def test_setup_create_tables_and_columns(mock_db):
-    with sqlite3.connect(mock_db.settings.db_file) as conn:
-        cur = conn.execute(f"PRAGMA table_info({mock_db.table_name})")
-        cols = [row[1] for row in cur.fetchall()]
+    table_info = mock_db.execute_sql(
+        f"PRAGMA table_info ({mock_db.table_name})", "Collecting table info", read=True
+    )
+
+    cols = [row[1] for row in table_info]
 
     assert "name" in cols
     assert "type" in cols
@@ -46,3 +51,10 @@ def test_execute_sql_write_and_read(mock_db):
     assert len(rows) == 1
     assert rows[0]["name"] == "test"
     assert rows[0]["type"] == "project"
+
+
+def test_db_sanity_check(mock_db):
+    with pytest.raises(sqlite3.OperationalError) as exc_info:
+        mock_db.execute_sql("Bad query", "Bad query")
+
+    assert exc_info.type == sqlite3.OperationalError

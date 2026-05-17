@@ -16,15 +16,10 @@ from http import HTTPStatus
 
 from fastapi import APIRouter
 
-# from utils.logger import logger
-
-# from settings import generate_settings
-# from schedule import scheduler
-
 router = APIRouter()
 
 
-@router.get("/health", status_code=HTTPStatus.ACCEPTED)
+@router.get("/health", status_code=HTTPStatus.OK)
 async def get_health_endpoint() -> dict:
     # region Docs
     """

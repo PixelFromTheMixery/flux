@@ -1,0 +1,23 @@
+from types import SimpleNamespace
+
+import pytest
+from fastapi import Request
+
+from app.middlewares.exception_middleware import ExceptionMiddleware
+
+
+@pytest.fixture(name="middleware_fixture")
+def mock_settings(client, monkeypatch):
+    settings = SimpleNamespace()
+    monkeypatch.setattr("app.data.database.generate_settings", lambda: settings)
+    middleware = ExceptionMiddleware(client)
+
+    return middleware
+
+
+def test_exception_parser(middleware_fixture):
+
+    with pytest.raises(Exception):
+        middleware_fixture.request_lobby(
+            Exception(type="FakeException", message="Fake Exception"), ()
+        )

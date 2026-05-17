@@ -2,7 +2,7 @@
 """
 [Module](app/settings.py)
 
-Notes: settings gets cleared out every test, might move to confest.py
+Notes:
 
 Tests:
     generate_settings_success
@@ -95,5 +95,7 @@ def test_pydantic_sanity_check(tmp_path, monkeypatch):
 
     monkeypatch.chdir(tmp_path)
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         generate_settings()
+
+    assert exc_info.type == ValidationError

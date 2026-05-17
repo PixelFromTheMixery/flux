@@ -13,14 +13,11 @@ TODO: Split out dispatch
 from typing import Callable
 
 from fastapi import Request, Response
-from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 import requests
 
-# from utils.exception import AnytypeException
 from ..utils.logger import logger
 
-# from .utils.pushover import PushoverUtils
 
 from ..settings import generate_settings
 
@@ -49,10 +46,39 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
 
         super().__init__(app)
         settings = generate_settings()
-        # if not settings.config.local:
-        #   self.pushover = PushoverUtils()
+        if not settings.config.local:
+            self.pushover = None
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    def pushover_message(self, content):
+        try:
+            self.pushover.send_message(f"API Error: {content}")
+        except Exception:
+            return Response(content, 500)
+
+    def exception_parser(self, exc: Exception, request):
+        error_type = type(exc).__name__
+        detail = str(exc)
+
+        if isinstance(exc, requests.exceptions.HTTPError):
+            try:
+                detail = exc.response.json().get("message", detail)
+            except Exception:
+                detail = exc.response.text[:100]
+
+        logger.error("Unhandled exception at %s: %s", request.url.path, detail)
+
+        exc_content = {
+            "status": "error",
+            "type": error_type,
+            "message": detail,
+            "path": f"{request.method} {request.url.path}",
+        }
+        if self.pushover:
+            self.pushover_message(exc_content)
+
+        return Response(exc_content, 500)
+
+    async def request_lobby(self, request: Request, call_next: Callable) -> Response:
         # region Docs
         """
         Dispatches Error message through multiple channels
@@ -85,27 +111,4 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         #    logger.error(exc)
         #    return JSONResponse({"Anytype error": exc.message}, exc.status)
         except Exception as exc:
-            error_type = type(exc).__name__
-            detail = str(exc)
-
-            if isinstance(exc, requests.exceptions.HTTPError):
-                try:
-                    detail = exc.response.json().get("message", detail)
-                except Exception:
-                    detail = exc.response.text[:100]
-
-            logger.error("Unhandled exception at %s: %s", request.url.path, detail)
-
-            content = {
-                "status": "error",
-                "type": error_type,
-                "message": detail,
-                "path": f"{request.method} {request.url.path}",
-            }
-
-            try:
-                self.pushover.send_message(
-                    f"API Error: {error_type}", detail, priority=1
-                )
-            except Exception:
-                return JSONResponse(content, 500)
+            return self.exception_passover(exc, request)

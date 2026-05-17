@@ -35,6 +35,7 @@ dependencies = [
 dev = [
     "black",              # Code formatter
     "ruff",               # Fast linting  
+    "httpx",              # Required for router tests
     "pytest",             # Testing framework
     "pytest-cov",         # Test Coverage
     "pylint-pytest",      # Prevent Pylint from worrying about pytest
@@ -63,7 +64,7 @@ preview = true
 addopts = "-ra -q"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-
+pythonpath = ["/app"]
 markers = [
   "read: tests that validate read-only behavior",
   "integration: integration tests"
