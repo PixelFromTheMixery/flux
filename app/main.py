@@ -18,8 +18,7 @@ from http import HTTPStatus
 
 from fastapi import FastAPI
 
-# from middlewares.exception_middleware import ExceptionMiddleware
-# from utils.api_tools import IPAllowlistMiddleware
+from .middlewares.exception_middleware import ExceptionMiddleware
 from .utils.docs import DESCRIPTION, TAGS
 from .utils.logger import logger
 from . import routers
@@ -45,8 +44,7 @@ def create_app() -> FastAPI:
         #        lifespan=lifespan,
     )
 
-    #    fastapi_app.add_middleware(ExceptionMiddleware)
-    #    fastapi_app.add_middleware(IPAllowlistMiddleware)
+    fastapi_app.add_middleware(ExceptionMiddleware)
 
     fastapi_app.include_router(routers.router)
 
