@@ -39,7 +39,7 @@ def test_generate_settings_success(tmp_path, monkeypatch):
         "local": false
         "api_addr": "https://api.mock.com"
         "api_port": "123"
-        "db_file": {str(tmp_path / "mock.db")}
+        "db_file": {str(tmp_path / "mock.json")}
     """
 
     d = tmp_path / "settings.yaml"
@@ -55,7 +55,7 @@ def test_generate_settings_success(tmp_path, monkeypatch):
     assert not settings.local
     assert settings.api_addr == "https://api.mock.com"
     assert settings.api_port == "123"
-    assert settings.db_file == str(tmp_path / "mock.db")
+    assert settings.db_file == str(tmp_path / "mock.json")
 
 
 def test_generate_settings_from_supplied(tmp_path, monkeypatch):

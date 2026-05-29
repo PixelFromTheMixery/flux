@@ -27,6 +27,7 @@ dependencies = [
 #    "pytokens",           # Used in AnyTypeUtils
     "pyyaml",             # YAML support
     "requests",           # HTTP calls
+    "tinydb",             # data instances
     "uvicorn",            # ASGI server
 ]
 

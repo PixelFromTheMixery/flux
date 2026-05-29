@@ -12,16 +12,15 @@ TODO: Add routes lol
 from fastapi import APIRouter
 
 from . import (
+    data_router,
     general_router,
     # anytype_router
 )
 # endregion
 
-# from settings import generate_settings
-
-# settings = generate_settings()
 router = APIRouter()
 
 router.include_router(general_router.router, prefix="/general", tags=["general"])
 
+router.include_router(data_router.router, prefix="/data", tags=["data"])
 # router.include_router(anytype_router.router, prefix="/anytype", tags=["anytype"])

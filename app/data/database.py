@@ -2,19 +2,21 @@
 """
 Database manager for mapping id's between integrations
 
-Creates a database with columns: name, type, and integration id n
+Creates a database with columns: name, group, and integration id n
 
 Classes:
     RefDB: The interactor class that manages and reads db
 
 #TODO: Query Builder as String method is prone to human error
 """
+
 # endregion
+from functools import lru_cache
 
-import sqlite3
-from sqlite3 import Row
+from tinydb import Query, TinyDB
 
-from ..settings import generate_settings
+from ..models.data_models import TinyDBDoc
+from ..settings import Settings, generate_settings
 from ..utils.logger import logger
 
 
@@ -26,19 +28,20 @@ class RefDB:
     Attributes:
         table_name (str): singular table for managing id's, I don't image expanding
         settings (Settings): for integration column gen
-        conn (SQLiteConnection): Connection to db to make query reads and changes
-        conn.row_factory(Row): Converter for tuples and CS dicts
-
+        db (TinyDB): database object for interaction
+        table (str): table name, for easier access as is there is only one
+        query (Query): cached Query instance for faster operations
     """
 
     # endregion
 
-    def __init__(self) -> None:
+    def __init__(self, settings: Settings = None) -> None:
         self.table_name = "id_maps"
-        self.settings = generate_settings()
-        self.conn = sqlite3.connect(self.settings.db_file)
-        self.conn.row_factory = Row
-        self.setup_database()
+        self.settings = settings if settings else generate_settings()
+        self.db = TinyDB(self.settings.db_file)
+        self.table = self.db.table(self.table_name)
+        self.query = Query()
+        self.get_mapping = lru_cache(maxsize=128)(self._get_mapping_internal)
 
     def close(self) -> None:
         # region Docs
@@ -47,73 +50,94 @@ class RefDB:
         """
         # endregion
 
-        if self.conn:
-            self.conn.close()
+        self.db.storage.close()
+        self.get_mapping.cache_clear()
 
-    def execute_sql(
-        self,
-        query: str,
-        query_summary: str,
-        params: tuple = (),
-        read: bool = False,
-    ) -> None | list[Row]:
+    def _get_mapping_internal(self, search_filter: int | dict[str, str]) -> dict | None:
         # region Docs
         """
-        Executor of SQL Queries
+        Gets an entry from the db based on name and group
 
         Args:
-            query (str): query to be enacted on database
-            query_summary (str): human readable intention
-            params (tuple): arguments for write changes
-            read (bool): if just performing read actions
+            id (int): doc id if provided
+            name (str): name of entry
+            group (str): project, tag, etc.
 
         Returns:
-            list[Row]: If read, any entries that match criteria
+            dict: full matching entry from database
         Raises:
-            OperationalError: If query is bad
-            ProgrammingError: Logical error in code
+            Exception: Read Error, unlikely with None safetynet
         """
         # endregion
+        entry = None
+        if isinstance(search_filter, int):
+            entry = self.table.get(doc_id=search_filter)
+        else:
+            entry = self.table.get(
+                (self.query.name == search_filter["name"])
+                & (self.query.group == search_filter["group"])
+            )
+        if entry:
+            result = dict(entry)
+            result["id"] = entry.doc_id
+            return result
+        return None
 
-        try:
-            cur = self.conn.execute(query, params)
-            if read:
-                rows = cur.fetchall()
-                logger.info(query_summary)
-                return rows
-            self.conn.commit()
-            logger.info(query_summary)
-
-        except sqlite3.Error as e:
-            logger.exception("DB Error: %s", e)
-            raise e
-
-    def setup_database(self) -> None:
+    def upsert_entry(self, name: str, group: str, int_name: str, int_id: str):
         # region Docs
         """
-        Prepares the database for intended interaction as descrined in module doc.
+        Updates existing, or inserts new entry based on provided info
 
-        First creates table and then adds required columns based on dynamic inputs
+        Args:
+            name (str): entry name
+            group (str): project, tag, etc.
+            int_name (str): name of the integration
+            int_id (str): id from integration
+
+        Raises:
+            Exception: Error writing to db/file
         """
         # endregion
 
-        self.execute_sql(
-            f"""
-                CREATE TABLE IF NOT EXISTS {self.table_name} (
-                    name TEXT PRIMARY KEY,
-                    type TEXT NOT NULL
-                )
-            """,
-            "Created table if not existed",
-        )
-        table = self.execute_sql(
-            f"PRAGMA table_info ({self.table_name})", "Collecting table info", read=True
-        )
-        columns = [row[1] for row in table]
+        action = ""
+        entry = self._get_mapping_internal({"name": name, "group": group})
+        if entry:
+            entry["integrations"][int_name] = int_id
+            TinyDBDoc(**entry)
 
-        for integration in self.settings.integrations.model_dump().keys():
-            if integration not in columns:
-                self.execute_sql(
-                    f"ALTER TABLE {self.table_name} ADD COLUMN {integration} TEXT",
-                    f"Adding column for {integration}",
-                )
+            entry_id = self.table.update(entry, doc_ids=[entry["id"]])
+            action = "Updated"
+        else:
+            new_entry = {
+                "name": name,
+                "group": group,
+                "integrations": {int_name: int_id},
+            }
+            TinyDBDoc(**new_entry)
+
+            entry_id = self.table.insert(new_entry)
+            action = "Created"
+
+        self.get_mapping.cache_clear()
+
+        logger.info(
+            "%s entry: %s (%s) with %s: %s",
+            action,
+            name,
+            group,
+            int_name,
+            int_id,
+        )
+        return entry_id
+
+    def show_table(self):
+        # region Docs
+        """
+        Returns all current data, cache assumed
+
+        Returns:
+            dict: All entries in table
+        """
+        # endregion
+
+        return self.table.all()

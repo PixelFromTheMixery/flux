@@ -1,0 +1,27 @@
+services:
+  # flux:
+  #   container_name: core
+  #   build: .
+  #   restart: unless-stopped
+  #   environment:
+  #     IP_ADDR: 0.0.0.0
+  #     IP_PORT: 8000
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./settings.yaml:/app/settings.yaml:ro
+  #     - ./data:/app/data
+  #   # network_mode: host
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/general/health || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  traggo:
+    image: traggo/server:latest
+    ports:
+      - 3030:3030
+    env_file:
+      - .env.docker
+    volumes:
+      - ./traggodata:/opt/traggo/data

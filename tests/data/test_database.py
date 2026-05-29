@@ -11,18 +11,14 @@ Tests:
 """
 # endregion
 
-import sqlite3
-
 import pytest
 
 from app.data.database import RefDB
-from app.settings import generate_settings
 
 
 @pytest.fixture(name="mock_db")
 def manage_db_connection(
-    monkeypatch,
-    tmp_path,
+    mock_settings,
 ):
     # region Docs
     """
@@ -37,91 +33,74 @@ def manage_db_connection(
     """
     # endregion
 
-    settings = {
-        "db_file": str(tmp_path / "test.db"),
-    }
+    db_class = RefDB(mock_settings)
 
-    monkeypatch.setattr(
-        "app.data.database.generate_settings", lambda: generate_settings(settings)
-    )
-    db = RefDB()
-
-    yield db
-
-    db.close()
+    try:
+        yield db_class
+    finally:
+        db_class.close()
 
 
-def test_setup_create_tables_and_columns(monkeypatch, mock_db):
+def test_upsert_and_entry_success(mock_db):
     # region Docs
     """
-    Tests if the intended columns are made in the table
+    Insert new entry, read, updates said entry, reads again
 
-    Notes:
-    - Since this is done as a part of startup, including the fixture, only looking at columns
-    - NOSONAR/pylint applied as the name of the variable IS a class, ans should follow such naming
+    Notes: Everything is done in one function according to all pathways to avoid code duplication.
 
     Inputs:
-        mock_db(RefDB): fake database for interaction
-        cols (list[str]): retrieved from row object
+        test (str): The tester integration fake id
+        testing (str) : The tester integration updated fake id
 
-    Expected result: (list[str]): name and type should already be present, testing should be created
+    Expected result: (dict): A new and updated dict.
     """
     # endregion
 
-    table_info = mock_db.execute_sql(
-        f"PRAGMA table_info ({mock_db.table_name})", "Collecting table info", read=True
-    )
+    mock_entry_id = mock_db.upsert_entry("test", "tag", "tester", "test")
 
-    cols = [row[1] for row in table_info]
+    # Tested insert, called directly
+    result = mock_db.table.get(doc_id=mock_entry_id)
 
-    assert "name" in cols
-    assert "type" in cols
-    assert "traggo" in cols
+    assert result.doc_id == 1
+    assert result["name"] == "test"
+    assert result["type"] == "tag"
+    assert result["integrations"] == {"tester": "test"}
+
+    # Tested insert, called via class
+    mock_result = mock_db.get_mapping("test", "tag")
+
+    assert mock_result["id"] == 1
+    assert mock_result["name"] == "test"
+    assert mock_result["type"] == "tag"
+    assert mock_result["integrations"] == {"tester": "test"}
+
+    mock_db.upsert_entry("test", "tag", "tester", "testing")
+
+    # Tested update, called directly as update performs in-class read
+    result = mock_db.table.get(doc_id=mock_entry_id)
+
+    assert result["integrations"]["tester"] == "testing"
 
 
-def test_execute_sql_write_and_read(mock_db):
+def test_show_table(mock_db):
     # region Docs
     """
-    Tests insert, then reads insert
+    Sanity check for table
 
     Notes: Any nuances or references.
 
     Inputs:
-        "query" (str): the output of part one becomes the input part two
+        fake entry (row): A fake entry to read all from
 
-    Expected result: (Row): row with project named test
+    Expected result: (dict): the fake entry as a dict
     """
     # endregion
 
-    mock_db.execute_sql(
-        "INSERT INTO id_maps (name, type) VALUES (?,?)",
-        "test insert of project test",
-        ("test", "project"),
-    )
-    rows = mock_db.execute_sql(
-        "SELECT * FROM id_maps WHERE name = ?", "read test row", ("test",), True
-    )
+    mock_db.upsert_entry("test", "tag", "tester", "test")
 
-    assert len(rows) == 1
-    assert rows[0]["name"] == "test"
-    assert rows[0]["type"] == "project"
+    table_result = mock_db.show_table()
 
-
-def test_db_sanity_check(mock_db):
-    # region Docs
-    """
-    Prompting a db exception
-
-    Notes: Any nuances or references.
-
-    Inputs:
-        "Bad Query" (str): intentional bad SQL
-
-    Expected result: (OperationalError): Obviously
-    """
-    # endregion
-
-    with pytest.raises(sqlite3.OperationalError) as exc_info:
-        mock_db.execute_sql("Bad query", "Bad query")
-
-    assert exc_info.type == sqlite3.OperationalError
+    assert len(table_result) == 1
+    assert table_result[0]["name"] == "test"
+    assert table_result[0]["type"] == "tag"
+    assert table_result[0]["integrations"] == {"tester": "test"}
