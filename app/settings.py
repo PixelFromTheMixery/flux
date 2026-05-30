@@ -17,10 +17,19 @@ TODO: Move file update mechanism in here as it is not used anywhere else
 
 from functools import lru_cache
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
 import yaml
 
 from .models.settings_models import Integrations
+
+
+class Secrets(BaseSettings):
+    mongodb_uri: str
+    api_addr: str = "https://127.0.0.1"
+    api_port: str = "8090"
+
+    model_config = SettingsConfigDict(env_file=".env.docker", extra="ignore")
 
 
 class Settings(BaseModel):
@@ -41,35 +50,10 @@ class Settings(BaseModel):
     # General
     local: bool = True
 
-    api_addr: str = "https://127.0.0.1"
-    api_port: str = "8090"
+    secrets: Secrets
 
-    db_file: str = "app/data/data.json"
     # Integrations
-
     integrations: Integrations = Integrations()
-
-    @field_validator("db_file", mode="after")
-    @classmethod
-    def ensure_json_db(cls, value):
-        # region Docs
-        """
-        tinyDB uses json files exclusively.
-
-        Args:
-            cls (Settings): Settings instance that is validated
-            value (str): key in instance to be validated
-
-        Returns:
-            value: If valid json filename, returns
-        Raises:
-            ValueError: If the value does not end with '.json'
-        """
-        # endregion
-
-        if not value.endswith(".json"):
-            raise ValueError(f"{value} must be a .json file name")
-        return value
 
 
 @lru_cache

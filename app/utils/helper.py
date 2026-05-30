@@ -12,8 +12,19 @@ TODO: Move deeplink to anytype utils when ready
 # endregion
 
 
-class Helper:
+def transformer(model) -> dict:
     # region Docs
     """
-    Shared methods dump
+    Gets an pydantic object and transforms it into a dict
+
+    Args:
+        model (pydanticObject): self explanatory
+
+    Returns:
+        dict: full matching entry from model
     """
+    # endregion
+
+    result = model.model_dump()
+    result["id"] = result.get("id")
+    return result

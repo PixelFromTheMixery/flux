@@ -3,6 +3,9 @@ services:
   #   container_name: core
   #   build: .
   #   restart: unless-stopped
+  #   depends_on:
+  #       atlas_local:
+  #     condition: service_healthy
   #   environment:
   #     IP_ADDR: 0.0.0.0
   #     IP_PORT: 8000
@@ -17,11 +20,31 @@ services:
   #     interval: 30s
   #     timeout: 10s
   #     retries: 3
+  mongodb:
+    image: mongodb/mongodb-atlas-local
+    hostname: mongodb
+    env_file:
+      - .env.docker
+    ports:
+      - 27017:27017
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - db:/data/db
+      - configdb:/data/configdb
+      - mongot:/data/mongot
+    healthcheck:
+      test: 'mongosh --exec "db.runCommand({ ping: 1 })" --quiet || exit 1'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   traggo:
     image: traggo/server:latest
     ports:
       - 3030:3030
-    env_file:
-      - .env.docker
     volumes:
       - ./traggodata:/opt/traggo/data
+volumes:
+  db:
+  configdb:
+  mongot:

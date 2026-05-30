@@ -6,21 +6,32 @@ Classes:
     TinyDBDoc: Simple object with id, name, type, and integration id's
 
 """
+
 # endregion
 
-from typing import Optional
-from pydantic import BaseModel
+from datetime import datetime
+
+from beanie import Document
+from pydantic import BaseModel, Field
 
 from .shared_models import BasicModel
 
 
-class TinyDBDoc(BaseModel):
+class EncryptedCredential(Document):
+    service: str
+    encrypted_api_key: bytes
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+    class Settings:
+        name = "credentials"
+
+
+class MappingDoc(Document):
     # region Docs
     """
-    Basic shape for TinyDB document
+    Basic shape for Mongo document
 
     Attributes:
-        id (int): doc_id of doc, saved for local access
         name (str): pretty name
         type (str): project or tag
         intrgration (dict): list of integration:id mappings
@@ -28,10 +39,13 @@ class TinyDBDoc(BaseModel):
 
     # endregion
 
-    id: Optional[int] = None
     name: str
     group: str
-    integrations: BasicModel
+    integrations: dict[str, str]
+
+    class Settings:
+        name = "id_maps"
+        indexes = [[("name", 1), ("group", 1)]]
 
 
 class DocSearch(BaseModel):
@@ -40,6 +54,16 @@ class DocSearch(BaseModel):
 
 
 class NewDoc(BaseModel):
-    entry_filter: int | DocSearch
+    name: str
+    group: str
     int_name: str
     int_id: str
+
+
+class NewKey(BaseModel):
+    service: str
+    key: str
+
+
+class UpsertRequest(BaseModel):
+    incoming: NewDoc | NewKey

@@ -20,14 +20,16 @@ keywords = ["anytype", "super-Productivity", "traggo", "api", "fastapi"]
 # Core dependencies (Third-party packages only)
 dependencies = [
     "apscheduler",        # Background jobs
+    "beanie",             # Mongo interaction
+    "cryptography",       # en/decryption of stored keys
     "fastapi",            # Web framework
+    "motor",              # async motor client, DB
     "pydantic",           # Data validation
     "pydantic_settings",  # Singleton
     "python-dateutil",    # relativedelta
 #    "pytokens",           # Used in AnyTypeUtils
     "pyyaml",             # YAML support
     "requests",           # HTTP calls
-    "tinydb",             # data instances
     "uvicorn",            # ASGI server
 ]
 

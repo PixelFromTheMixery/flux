@@ -7,15 +7,19 @@ Creates a database with columns: name, group, and integration id n
 Classes:
     RefDB: The interactor class that manages and reads db
 
-#TODO: Query Builder as String method is prone to human error
+#TODO: Change to mongo
 """
 
 # endregion
-from functools import lru_cache
 
-from tinydb import Query, TinyDB
+from typing import Optional
+from beanie import init_beanie
+from motor.motor_asyncio import AsyncIOMotorClient
 
-from ..models.data_models import TinyDBDoc
+from .encryption import Cryptor
+
+from ..utils.helper import transformer
+from ..models.data_models import MappingDoc, EncryptedCredential, UpsertRequest, NewDoc, NewKey
 from ..settings import Settings, generate_settings
 from ..utils.logger import logger
 
@@ -36,12 +40,18 @@ class RefDB:
     # endregion
 
     def __init__(self, settings: Settings = None) -> None:
-        self.table_name = "id_maps"
         self.settings = settings if settings else generate_settings()
-        self.db = TinyDB(self.settings.db_file)
-        self.table = self.db.table(self.table_name)
-        self.query = Query()
-        self.get_mapping = lru_cache(maxsize=128)(self._get_mapping_internal)
+        self.client: Optional[AsyncIOMotorClient] = None
+        self.cryptor = Cryptor(settings)
+
+    async def init_db(self) -> None:
+        self.client = AsyncIOMotorClient(self.settings.secrets.mongodb_uri)
+
+        await init_beanie(
+            database=self.client["flux"],
+            document_models=[MappingDoc, EncryptedCredential],
+        )
+        logger.info("Mongo/Beanie initialised with mapping and credential tables")
 
     def close(self) -> None:
         # region Docs
@@ -50,40 +60,18 @@ class RefDB:
         """
         # endregion
 
-        self.db.storage.close()
-        self.get_mapping.cache_clear()
+        if self.client:
+            self.client.close()
+        logger.info("Mongo connection closed")
 
-    def _get_mapping_internal(self, search_filter: int | dict[str, str]) -> dict | None:
-        # region Docs
-        """
-        Gets an entry from the db based on name and group
+    async def get_entry(self, name: str, group: str):
+        entry = await MappingDoc.find_one(
+            MappingDoc.name == name, MappingDoc.group == group
+        )
 
-        Args:
-            id (int): doc id if provided
-            name (str): name of entry
-            group (str): project, tag, etc.
+        return transformer(entry)
 
-        Returns:
-            dict: full matching entry from database
-        Raises:
-            Exception: Read Error, unlikely with None safetynet
-        """
-        # endregion
-        entry = None
-        if isinstance(search_filter, int):
-            entry = self.table.get(doc_id=search_filter)
-        else:
-            entry = self.table.get(
-                (self.query.name == search_filter["name"])
-                & (self.query.group == search_filter["group"])
-            )
-        if entry:
-            result = dict(entry)
-            result["id"] = entry.doc_id
-            return result
-        return None
-
-    def upsert_entry(self, name: str, group: str, int_name: str, int_id: str):
+    async def upsert_entry(self, request: UpsertRequest):
         # region Docs
         """
         Updates existing, or inserts new entry based on provided info
@@ -100,25 +88,42 @@ class RefDB:
         # endregion
 
         action = ""
-        entry = self._get_mapping_internal({"name": name, "group": group})
-        if entry:
-            entry["integrations"][int_name] = int_id
-            TinyDBDoc(**entry)
 
-            entry_id = self.table.update(entry, doc_ids=[entry["id"]])
-            action = "Updated"
+        if isinstance(request.incoming, NewDoc):
+            doc_request = request.incoming
+            entry = await MappingDoc.find_one(
+                MappingDoc.name == doc_request.name, MappingDoc.group == doc_request.group
+            )
+            if entry:
+                entry["integrations"][doc_request.int_name] = doc_request.int_id
+                action = "Updated"
+            else:
+                entry = MappingDoc(
+                    name=doc_request.name,
+                    group= doc_request.group,
+                    integrations={doc_request.int_name:doc_request.int_id},
+                )
+                action = "Created"
+            MappingDoc(**entry)
+
         else:
-            new_entry = {
-                "name": name,
-                "group": group,
-                "integrations": {int_name: int_id},
-            }
-            TinyDBDoc(**new_entry)
+            key_request = request.incoming
+            entry = await EncryptedCredential.find_one(
+                EncryptedCredential.service == incoming.service
+            )
+            encrypted_cred = Cryptor.crypt_string(incom)
+            if entry:
+                entry[service] = 
+                action = "Updated"
+            else:
+                entry = EncryptedCredential(
+                    service=incoming["service"] ,
+                    encrypted_api_key= incoming["group"],
+                    integrations= incoming["integrations"],
+                )
+                action = "Created"
 
-            entry_id = self.table.insert(new_entry)
-            action = "Created"
-
-        self.get_mapping.cache_clear()
+        result = await entry.save() if action == "Updated" else entry.insert()
 
         logger.info(
             "%s entry: %s (%s) with %s: %s",
@@ -128,9 +133,9 @@ class RefDB:
             int_name,
             int_id,
         )
-        return entry_id
+        return result
 
-    def show_table(self):
+    async def show_table(self):
         # region Docs
         """
         Returns all current data, cache assumed
@@ -140,4 +145,12 @@ class RefDB:
         """
         # endregion
 
-        return self.table.all()
+        entries = await MappingDoc.find_all().to_list()
+        return [entry.model_dump() for entry in entries]
+
+    async def upsert_cred(self, service, key):
+        entry = await EncryptedCredential.find_one(
+            EncryptedCredential.service == service
+        )
+
+        if 
