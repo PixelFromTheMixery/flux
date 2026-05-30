@@ -1,6 +1,3 @@
-# TODO: generate secret key as a part of setup using
-# python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-
 from cryptography.fernet import Fernet
 
 
