@@ -1,1 +1,0 @@
-uvicorn app.main:create_app --factory --host $IP_ADDR --port $IP_PORT

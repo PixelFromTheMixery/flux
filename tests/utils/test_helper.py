@@ -8,21 +8,16 @@ Tests:
     make_deeplink
 
 """
+
 # endregion
+from app.models.shared_models import BasicModel
 
-import pytest
-
-from app.utils.helper import Helper
+from app.utils.helper import transformer
 
 
-@pytest.fixture
-def helper() -> Helper:
-    # region Docs
-    """
-    Brings in Helper for testing
-    Returns:
-        Helper: holds methods to test
-    """
-    # endregion
+def test_transformer():
+    mock_model = BasicModel(name="mock", id="model")
+    result = transformer(mock_model)
 
-    return Helper()
+    assert result["name"] == "mock"
+    assert result["id"] == "model"

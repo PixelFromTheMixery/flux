@@ -10,11 +10,10 @@ Classes:
 # endregion
 
 from datetime import datetime
+from typing import Optional
 
 from beanie import Document
 from pydantic import BaseModel, Field
-
-from .shared_models import BasicModel
 
 
 class EncryptedCredential(Document):
@@ -24,6 +23,12 @@ class EncryptedCredential(Document):
 
     class Settings:
         name = "credentials"
+
+
+class Integrations(BaseModel):
+    traggo: Optional[str] = None
+    sp: Optional[str] = None
+    anytype: Optional[str] = None
 
 
 class MappingDoc(Document):
@@ -41,7 +46,7 @@ class MappingDoc(Document):
 
     name: str
     group: str
-    integrations: dict[str, str]
+    integrations: Integrations
 
     class Settings:
         name = "id_maps"

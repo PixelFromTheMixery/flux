@@ -25,14 +25,15 @@ from .models.settings_models import Integrations
 
 
 class Secrets(BaseSettings):
-    mongodb_uri: str
     api_addr: str = "https://127.0.0.1"
     api_port: str = "8090"
+    field_encryption_key: str
+    mongodb_uri: str
 
     model_config = SettingsConfigDict(env_file=".env.docker", extra="ignore")
 
 
-class Settings(BaseModel):
+class Config(BaseModel):
     # region Docs
     """
     App configuration
@@ -50,10 +51,13 @@ class Settings(BaseModel):
     # General
     local: bool = True
 
-    secrets: Secrets
-
     # Integrations
     integrations: Integrations = Integrations()
+
+
+class Settings(BaseModel):
+    secrets: Secrets
+    config: Config
 
 
 @lru_cache
@@ -67,13 +71,13 @@ def load_settings_from_file() -> Settings:
         FileNotFoundError: If the config.yaml is not found.
     """
     # endregion
+    secrets = Secrets()
 
     try:
         with open("settings.yaml", "r", encoding="UTF-8") as f:
             contents = yaml.safe_load(f)
             if contents:
-                return Settings(**contents)
-            return Settings()
+                return Settings(config=Config(**contents), secrets=secrets)
 
     except FileNotFoundError as exc:
         raise FileNotFoundError("settings.yaml required") from exc
@@ -91,8 +95,10 @@ def generate_settings(supplied: dict = None) -> Settings:
         Settings: from code
     """
     # endregion
+    secrets = Secrets()
 
     if supplied:
-        return Settings(**supplied)
+        config = Config(**supplied)
+        return Settings(config=config, secrets=secrets)
 
     return load_settings_from_file()

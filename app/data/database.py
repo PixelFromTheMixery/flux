@@ -19,7 +19,12 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from .encryption import Cryptor
 
 from ..utils.helper import transformer
-from ..models.data_models import MappingDoc, EncryptedCredential, UpsertRequest, NewDoc, NewKey
+from ..models.data_models import (
+    MappingDoc,
+    EncryptedCredential,
+    UpsertRequest,
+    NewDoc,
+)
 from ..settings import Settings, generate_settings
 from ..utils.logger import logger
 
@@ -92,7 +97,8 @@ class RefDB:
         if isinstance(request.incoming, NewDoc):
             doc_request = request.incoming
             entry = await MappingDoc.find_one(
-                MappingDoc.name == doc_request.name, MappingDoc.group == doc_request.group
+                MappingDoc.name == doc_request.name,
+                MappingDoc.group == doc_request.group,
             )
             if entry:
                 entry["integrations"][doc_request.int_name] = doc_request.int_id
@@ -100,8 +106,8 @@ class RefDB:
             else:
                 entry = MappingDoc(
                     name=doc_request.name,
-                    group= doc_request.group,
-                    integrations={doc_request.int_name:doc_request.int_id},
+                    group=doc_request.group,
+                    integrations={doc_request.int_name: doc_request.int_id},
                 )
                 action = "Created"
             MappingDoc(**entry)
@@ -109,30 +115,37 @@ class RefDB:
         else:
             key_request = request.incoming
             entry = await EncryptedCredential.find_one(
-                EncryptedCredential.service == incoming.service
+                EncryptedCredential.service == key_request.service
             )
-            encrypted_cred = Cryptor.crypt_string(incom)
+            encrypted_cred = self.cryptor.crypt_string(key_request.key)
             if entry:
-                entry[service] = 
+                entry[key_request.service] = self.cryptor.crypt_string(key_request.key)
                 action = "Updated"
             else:
                 entry = EncryptedCredential(
-                    service=incoming["service"] ,
-                    encrypted_api_key= incoming["group"],
-                    integrations= incoming["integrations"],
+                    service=key_request.service,
+                    encrypted_api_key=encrypted_cred,
                 )
                 action = "Created"
 
         result = await entry.save() if action == "Updated" else entry.insert()
 
-        logger.info(
-            "%s entry: %s (%s) with %s: %s",
-            action,
-            name,
-            group,
-            int_name,
-            int_id,
-        )
+        if isinstance(request.incoming, NewDoc):
+            logger.info(
+                "%s entry: %s (%s) with %s: %s",
+                action,
+                doc_request.name,
+                doc_request.group,
+                doc_request.int_name,
+                doc_request.int_id,
+            )
+
+        else:
+            logger.info(
+                "%s key: %s",
+                action,
+                doc_request.service,
+            )
         return result
 
     async def show_table(self):
@@ -148,9 +161,8 @@ class RefDB:
         entries = await MappingDoc.find_all().to_list()
         return [entry.model_dump() for entry in entries]
 
-    async def upsert_cred(self, service, key):
+    async def get_key(self, service: str):
         entry = await EncryptedCredential.find_one(
             EncryptedCredential.service == service
         )
-
-        if 
+        return self.cryptor.crypt_string(entry.encrypted_api_key, False)

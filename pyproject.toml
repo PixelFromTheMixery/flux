@@ -36,12 +36,14 @@ dependencies = [
 # uv sync --extra dev
 [project.optional-dependencies]
 dev = [
-    "black",              # Code formatter
-    "ruff",               # Fast linting  
-    "httpx",              # Required for router tests
-    "pytest",             # Testing framework
-    "pytest-cov",         # Test Coverage
-    "pylint-pytest",      # Prevent Pylint from worrying about pytest
+    "black",                    # Code formatter
+    "ruff",                     # Fast linting  
+    "httpx",                    # Required for router tests
+    "testcontainers[mongodb]",  # Required for mongo tests
+    "pytest",                   # Testing framework
+    "pytest-asyncio",           # Async test
+    "pytest-cov",               # Test Coverage
+    "pylint-pytest",            # Prevent Pylint from worrying about pytest
 ]
 
 [tool.pylint.MASTER]
@@ -73,3 +75,5 @@ markers = [
   "integration: integration tests"
 ]
 filterwarnings = ["error"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

@@ -21,7 +21,15 @@ import pytest
 from app.settings import load_settings_from_file, generate_settings, Settings
 
 
-def test_generate_settings_success(tmp_path, monkeypatch):
+@pytest.fixture(name="_fake_env_vars")
+def monkeypatch_envs(monkeypatch):
+    monkeypatch.setenv("API_ADDR", "https://api.mock.com")
+    monkeypatch.setenv("API_PORT", "123")
+    monkeypatch.setenv("FIELD_ENCRYPTION_KEY", "fake_key")
+    monkeypatch.setenv("MONGODB_URI", "mongobd://mock.uri")
+
+
+def test_generate_settings_success(tmp_path, monkeypatch, _fake_env_vars):
     # region Docs
     """
     Valid YAML content
@@ -35,11 +43,8 @@ def test_generate_settings_success(tmp_path, monkeypatch):
     """
     # endregion
 
-    mock_yaml = f"""
+    mock_yaml = """
         "local": false
-        "api_addr": "https://api.mock.com"
-        "api_port": "123"
-        "db_file": {str(tmp_path / "mock.json")}
     """
 
     d = tmp_path / "settings.yaml"
@@ -52,13 +57,15 @@ def test_generate_settings_success(tmp_path, monkeypatch):
     load_settings_from_file.cache_clear()
 
     assert isinstance(settings, Settings)
-    assert not settings.local
-    assert settings.api_addr == "https://api.mock.com"
-    assert settings.api_port == "123"
-    assert settings.db_file == str(tmp_path / "mock.json")
+
+    assert not settings.config.local
+    assert settings.secrets.api_addr == "https://api.mock.com"
+    assert settings.secrets.api_port == "123"
+    assert settings.secrets.field_encryption_key == "fake_key"
+    assert settings.secrets.mongodb_uri == "mongobd://mock.uri"
 
 
-def test_generate_settings_from_supplied(tmp_path, monkeypatch):
+def test_generate_settings_from_supplied(_fake_env_vars):
     # region Docs
     """
     Checks if supplied settings are used when provided
@@ -72,23 +79,18 @@ def test_generate_settings_from_supplied(tmp_path, monkeypatch):
     """
     # endregion
 
-    monkeypatch.chdir(tmp_path)
-
     yaml_supplied = {
         "local": False,
-        "api_addr": "https://api.mock.com",
-        "api_port": "123",
     }
 
     settings = generate_settings(yaml_supplied)
 
     assert isinstance(settings, Settings)
-    assert not settings.local
-    assert settings.api_addr == "https://api.mock.com"
-    assert settings.api_port == "123"
+    assert not settings.config.local
+    assert settings.secrets.api_addr == "https://api.mock.com"
 
 
-def test_settings_file_missing(tmp_path, monkeypatch):
+def test_settings_file_missing(tmp_path, monkeypatch, _fake_env_vars):
     # region Docs
     """
     Tests if settings file is missing
@@ -107,7 +109,7 @@ def test_settings_file_missing(tmp_path, monkeypatch):
     assert str(exc_info.value) == "settings.yaml required"
 
 
-def test_pydantic_sanity_check_file(tmp_path, monkeypatch):
+def test_pydantic_sanity_check_file(tmp_path, monkeypatch, _fake_env_vars):
     # region Docs
     """
     Prompting Pydantic to error on a broken yaml.
@@ -135,7 +137,7 @@ def test_pydantic_sanity_check_file(tmp_path, monkeypatch):
     assert exc_info.type == ValidationError
 
 
-def test_pydantic_sanity_check_dict():
+def test_pydantic_sanity_check_dict(_fake_env_vars):
     # region Docs
     """
     Prompting Pydantic to error on a broken yaml.

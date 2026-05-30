@@ -45,7 +45,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
 
         super().__init__(app)
         settings = generate_settings()
-        if not settings.local:
+        if not settings.config.local:
             self.pushover = None
 
     def pushover_message(self, content) -> Response:

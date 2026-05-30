@@ -83,10 +83,7 @@ def exception_handler(e, result, attempt):
 
 def build_header():
 
-    return {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + ,
-    }
+    return {"Content-Type": "application/json", "Authorization": "Bearer " + ""}
 
 
 def make_call(
@@ -115,15 +112,17 @@ def make_call(
     """
     # endregion
 
+    headers = build_header
+
     attempt = 0
     while True:
         try:
             logger.info("Attempt to %s: %s of %s", info, attempt, RETRIES)
 
             response = (
-                RESPONSE_MAP[category](url, HEADERS, data)
+                RESPONSE_MAP[category](url, headers, data)
                 if category in ["patch", "post", "put"]
-                else RESPONSE_MAP[category](url, HEADERS)
+                else RESPONSE_MAP[category](url, headers)
             )
 
             response.raise_for_status()

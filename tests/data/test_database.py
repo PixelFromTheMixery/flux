@@ -17,22 +17,15 @@ from app.data.database import RefDB
 
 
 @pytest.fixture(name="mock_db")
-def manage_db_connection(
-    mock_settings,
-):
+async def make_connection(mock_settings):
     # region Docs
     """
     Sets up fake database in tmp dir to protect live data.
-
-    Args:
-        monkeypatch (pytest-tool): override db file path to use tmp_path
-        tmp_path (pytest-tool): creates a temporary directory for files
 
     Returns:
         RefDB: the fake database, which is held, then closed for resource avoidance
     """
     # endregion
-
     db_class = RefDB(mock_settings)
 
     try:
@@ -41,7 +34,12 @@ def manage_db_connection(
         db_class.close()
 
 
-def test_upsert_and_entry_success(mock_db):
+@pytest.mark.asyncio
+async def test_close_connection(mock_db):
+    mock_db.close()
+
+
+def test_upsert_and_entry_success(mock_db, mock_settings):
     # region Docs
     """
     Insert new entry, read, updates said entry, reads again

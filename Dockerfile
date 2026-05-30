@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 
 COPY --chown=1000:1000 app/ ./app/
-COPY --chown=1000:1000 settings.yaml ./
+COPY --chown=1000:1000 app/settings.yaml ./app/
 
 RUN useradd --system --create-home --home-dir /home/appuser --shell /usr/sbin/nologin appuser \
     && chown -R appuser:appuser /app
