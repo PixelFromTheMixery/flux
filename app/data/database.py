@@ -7,14 +7,13 @@ Creates a database with columns: name, group, and integration id n
 Classes:
     RefDB: The interactor class that manages and reads db
 
-#TODO: Change to mongo
 """
 
 # endregion
 
-from typing import Optional
+import asyncio
 from beanie import init_beanie
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import AsyncMongoClient
 
 from .encryption import Cryptor
 
@@ -25,7 +24,7 @@ from ..models.data_models import (
     UpsertRequest,
     NewDoc,
 )
-from ..settings import Settings, generate_settings
+
 from ..utils.logger import logger
 
 
@@ -35,46 +34,58 @@ class RefDB:
     interactor class that manages and reads db
 
     Attributes:
-        table_name (str): singular table for managing id's, I don't image expanding
-        settings (Settings): for integration column gen
-        db (TinyDB): database object for interaction
-        table (str): table name, for easier access as is there is only one
-        query (Query): cached Query instance for faster operations
+        client (AsyncMongoClient): executor of requested actions
+        cryptor (Cryptor): en/decryt secret strings like api keys
     """
 
     # endregion
 
-    def __init__(self, settings: Settings = None) -> None:
-        self.settings = settings if settings else generate_settings()
-        self.client: Optional[AsyncIOMotorClient] = None
-        self.cryptor = Cryptor(settings)
+    def __init__(
+        self, client: AsyncMongoClient = None, cryptor: Cryptor = None
+    ) -> None:
+        self.instance = None
+        self.client: AsyncMongoClient = client
+        self.cryptor: Cryptor = cryptor
 
-    async def init_db(self) -> None:
-        self.client = AsyncIOMotorClient(self.settings.secrets.mongodb_uri)
+    @classmethod
+    async def db_singleton(cls, mongo_uri, field_encryption_key) -> RefDB:
+        if cls.instance is not None:
+            return cls.instance
+
+        client = AsyncMongoClient(mongo_uri)
 
         await init_beanie(
-            database=self.client["flux"],
+            database=client.get_database("flux_db"),
             document_models=[MappingDoc, EncryptedCredential],
         )
         logger.info("Mongo/Beanie initialised with mapping and credential tables")
 
-    def close(self) -> None:
+        cls.instance = cls(client=client, cryptor=Cryptor(field_encryption_key))
+
+        return cls.instance
+
+    async def close(self) -> None:
         # region Docs
         """
-        Closes connection to database, useful for testing.
+        Closes connection to database and waits politely for connections to close,
+        useful for testing.
         """
         # endregion
 
         if self.client:
-            self.client.close()
+            await self.client.close()
+            await asyncio.sleep(0)
         logger.info("Mongo connection closed")
 
-    async def get_entry(self, name: str, group: str):
+    async def get_entry(
+        self,
+        group: str,
+        name: str,
+    ):
         entry = await MappingDoc.find_one(
             MappingDoc.name == name, MappingDoc.group == group
         )
-
-        return transformer(entry)
+        return transformer(entry) if entry else {"Error": "Not Found"}
 
     async def upsert_entry(self, request: UpsertRequest):
         # region Docs
@@ -101,8 +112,9 @@ class RefDB:
                 MappingDoc.group == doc_request.group,
             )
             if entry:
-                entry["integrations"][doc_request.int_name] = doc_request.int_id
+                setattr(entry.integrations, doc_request.int_name, doc_request.int_id)
                 action = "Updated"
+
             else:
                 entry = MappingDoc(
                     name=doc_request.name,
@@ -110,7 +122,6 @@ class RefDB:
                     integrations={doc_request.int_name: doc_request.int_id},
                 )
                 action = "Created"
-            MappingDoc(**entry)
 
         else:
             key_request = request.incoming
@@ -119,7 +130,11 @@ class RefDB:
             )
             encrypted_cred = self.cryptor.crypt_string(key_request.key)
             if entry:
-                entry[key_request.service] = self.cryptor.crypt_string(key_request.key)
+                setattr(
+                    entry,
+                    "encrypted_api_key",
+                    self.cryptor.crypt_string(key_request.key),
+                )
                 action = "Updated"
             else:
                 entry = EncryptedCredential(
@@ -128,7 +143,7 @@ class RefDB:
                 )
                 action = "Created"
 
-        result = await entry.save() if action == "Updated" else entry.insert()
+        await entry.save()
 
         if isinstance(request.incoming, NewDoc):
             logger.info(
@@ -144,9 +159,9 @@ class RefDB:
             logger.info(
                 "%s key: %s",
                 action,
-                doc_request.service,
+                key_request.service,
             )
-        return result
+        return entry
 
     async def show_table(self):
         # region Docs

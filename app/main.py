@@ -48,7 +48,7 @@ def create_app() -> FastAPI:
 
     fastapi_app.include_router(routers.router)
 
-    @fastapi_app.get("/", tags=["general"], status_code=HTTPStatus.ACCEPTED)
+    @fastapi_app.get("/", tags=["general"], status_code=HTTPStatus.OK)
     async def get_root() -> dict:
         """Root Endpoint"""
         logger.info("Root endpoint called")

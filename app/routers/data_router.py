@@ -10,24 +10,27 @@ Methods:
 """
 # endregion
 
-from typing import Annotated
 from http import HTTPStatus
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
 from ..data.database import RefDB
-from ..models.data_models import NewDoc
-from ..settings import generate_settings
+from ..models.data_models import UpsertRequest
+from ..settings import Settings, generate_settings
+from ..utils.helper import transformer
 
 router = APIRouter()
 
 
-def database_ref():
-    return RefDB(generate_settings())
+async def database_ref(settings: Settings = Depends(generate_settings)):
+    return await RefDB.db_singleton(
+        settings.secrets.mongodb_uri, settings.secrets.field_encryption_key
+    )
 
 
 @router.get("/all", status_code=HTTPStatus.OK)
-async def get_database_data(db: Annotated[RefDB, Depends(database_ref)]) -> list:
+async def get_database_data(db: Annotated[RefDB, Depends(database_ref)]):
     # region Docs
     """
     Endpoint for fetching database data
@@ -36,12 +39,19 @@ async def get_database_data(db: Annotated[RefDB, Depends(database_ref)]) -> list
     """
     # endregion
 
-    return db.show_table()
+    return await db.show_table()
 
 
-@router.post("/upsert")
+@router.post("/upsert", status_code=HTTPStatus.ACCEPTED)
 async def upsert_entry(
-    db: Annotated[RefDB, Depends(database_ref)], entry: NewDoc
+    db: Annotated[RefDB, Depends(database_ref)], upsert: UpsertRequest
 ) -> dict:
-    new_entry_id = db.upsert_entry(**entry.model_dump())
-    return db.get_mapping(doc_id=new_entry_id)
+    result = await db.upsert_entry(upsert)
+    return transformer(result)
+
+
+@router.get("/{group}/{name}", status_code=HTTPStatus.OK)
+async def get_entry(
+    db: Annotated[RefDB, Depends(database_ref)], group: str, name: str
+) -> dict:
+    return await db.get_entry(group, name)

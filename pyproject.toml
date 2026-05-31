@@ -23,7 +23,6 @@ dependencies = [
     "beanie",             # Mongo interaction
     "cryptography",       # en/decryption of stored keys
     "fastapi",            # Web framework
-    "motor",              # async motor client, DB
     "pydantic",           # Data validation
     "pydantic_settings",  # Singleton
     "python-dateutil",    # relativedelta
