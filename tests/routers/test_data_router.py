@@ -9,35 +9,10 @@ Tests:
 
 import pytest
 
-from app.data.database import RefDB
-
-
-@pytest.fixture(name="_mock_db")
-async def make_connection(mock_settings):
-    # region Docs
-    """
-    Sets up fake database in tmp dir to protect live data.
-    Table dropped at the start of every run
-
-    Returns:
-        RefDB: the fake database, which is held, then closed for resource avoidance
-    """
-    # endregion
-
-    RefDB.instance = None
-    db_instance = await RefDB.db_singleton(
-        mock_settings.secrets.mongodb_uri, mock_settings.secrets.field_encryption_key
-    )
-
-    yield db_instance
-
-    await db_instance.close()
-    RefDB.instance = None
-
 
 # endregion
 @pytest.mark.asyncio
-async def test_get_database_data_empty(app_client, _mock_db):
+async def test_get_database_data_empty(app_client):
     # region Docs
     """
     Gets database content
@@ -55,7 +30,7 @@ async def test_get_database_data_empty(app_client, _mock_db):
 
 
 @pytest.mark.asyncio
-async def test_upsert_entry_and_read(app_client, _mock_db):
+async def test_upsert_entry_and_read(app_client):
     # region Docs
     """
     Upsert check
@@ -91,3 +66,8 @@ async def test_upsert_entry_and_read(app_client, _mock_db):
 
     assert read_result.status_code == 200
     assert read_result.json() == result_json
+
+    delete_result = await app_client.delete(f"/data/{result_json['id']}")
+
+    assert delete_result.status_code == 200
+    assert delete_result.json()["Deleted"] == result_json

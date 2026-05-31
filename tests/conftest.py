@@ -9,6 +9,7 @@ Methods:
 
 # endregion
 
+from asgi_lifespan import LifespanManager
 from httpx import AsyncClient, ASGITransport
 from cryptography.fernet import Fernet
 from testcontainers.core.generic import DockerContainer
@@ -61,13 +62,15 @@ async def app_client_fixture(mock_settings):
     from app.main import app
 
     # ASGITransport is required in newer HTTPX versions to route directly to FastAPI
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
-        yield client
+
+    async with LifespanManager(app=app) as manager:
+        async with AsyncClient(
+            transport=ASGITransport(app=manager.app), base_url="http://test"
+        ) as client:
+            yield client
 
 
-@pytest.fixture(name="mongo_conn")
+@pytest.fixture(name="mongo_conn", scope="session")
 def mongo_uri():
     mongo = DockerContainer("mongo:6.0").with_exposed_ports(27017)
 

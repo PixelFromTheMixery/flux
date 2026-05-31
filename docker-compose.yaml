@@ -23,6 +23,7 @@ services:
   mongodb:
     image: mongodb/mongodb-atlas-local
     hostname: mongodb
+    container_name: mongodb
     env_file:
       - .env.docker
     ports:

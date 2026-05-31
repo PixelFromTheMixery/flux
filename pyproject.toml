@@ -35,6 +35,7 @@ dependencies = [
 # uv sync --extra dev
 [project.optional-dependencies]
 dev = [
+    "asgi-lifespan",            # Lifespan testing manager
     "black",                    # Code formatter
     "ruff",                     # Fast linting  
     "httpx",                    # Required for router tests

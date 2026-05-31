@@ -1,4 +1,4 @@
-KEY=$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=')
+KEY=$(openssl rand 32 | openssl base64 | tr '+/' '-_')
 FILE=".env.docker"
 
 touch "$FILE"

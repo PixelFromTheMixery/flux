@@ -19,11 +19,12 @@ from http import HTTPStatus
 from fastapi import FastAPI
 
 # from .middlewares.exception_middleware import ExceptionMiddleware
+from .settings import generate_settings
 from .utils.docs import DESCRIPTION, TAGS
 from .utils.logger import logger
 from . import routers
 
-# from schedule import lifespan
+from .lifespan import lifespan
 
 
 def create_app() -> FastAPI:
@@ -37,14 +38,16 @@ def create_app() -> FastAPI:
     # endregion
 
     fastapi_app = FastAPI(
-        title="AnyType Automation",
+        title="Flux",
         description=DESCRIPTION,
-        summary="API endpoints for the Anytype App",
+        summary="API endpoints for the Flux Central hub",
         openapi_tags=TAGS,
-        #        lifespan=lifespan,
+        lifespan=lifespan,
     )
 
     #     fastapi_app.add_middleware(ExceptionMiddleware)
+
+    fastapi_app.state.settings = generate_settings()
 
     fastapi_app.include_router(routers.router)
 

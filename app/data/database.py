@@ -38,12 +38,13 @@ class RefDB:
         cryptor (Cryptor): en/decryt secret strings like api keys
     """
 
+    instance = None
+
     # endregion
 
     def __init__(
         self, client: AsyncMongoClient = None, cryptor: Cryptor = None
     ) -> None:
-        self.instance = None
         self.client: AsyncMongoClient = client
         self.cryptor: Cryptor = cryptor
 
@@ -52,7 +53,14 @@ class RefDB:
         if cls.instance is not None:
             return cls.instance
 
-        client = AsyncMongoClient(mongo_uri)
+        client = AsyncMongoClient(mongo_uri, serverSelectionTimeoutMS=2000)
+
+        try:
+            await client.admin.command("ping")
+        except Exception as e:
+            await client.close()
+            logger.error("MongoDB connection failed %s", e)
+            raise
 
         await init_beanie(
             database=client.get_database("flux_db"),
@@ -174,10 +182,20 @@ class RefDB:
         # endregion
 
         entries = await MappingDoc.find_all().to_list()
-        return [entry.model_dump() for entry in entries]
+        formatted_entries = []
+        for entry in entries:
+            formatted_entries.append(transformer(entry))
+        return formatted_entries
 
     async def get_key(self, service: str):
         entry = await EncryptedCredential.find_one(
             EncryptedCredential.service == service
         )
         return self.cryptor.crypt_string(entry.encrypted_api_key, False)
+
+    async def delete_entry(self, doc_id):
+        entry = await MappingDoc.get(doc_id)
+        if entry:
+            await entry.delete()
+            return {"Deleted": transformer(entry)}
+        return {"Error": "Not Found"}

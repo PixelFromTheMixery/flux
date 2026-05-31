@@ -18,7 +18,7 @@ from pydantic import ValidationError
 import pytest
 
 
-from app.settings import load_settings_from_file, generate_settings, Settings
+from app.settings import generate_settings, Settings
 
 
 @pytest.fixture(name="_fake_env_vars")
@@ -53,8 +53,6 @@ def test_generate_settings_success(tmp_path, monkeypatch, _fake_env_vars):
     monkeypatch.chdir(tmp_path)
 
     settings = generate_settings()
-
-    load_settings_from_file.cache_clear()
 
     assert isinstance(settings, Settings)
 

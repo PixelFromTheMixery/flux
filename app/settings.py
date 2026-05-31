@@ -5,17 +5,16 @@ Settings for API
 Processor of the config.yaml file, which will configure the way the app functions at runtime
 
 Classes:
-    ConfigSettings: Pydantic model for config settings file
+    Secrets: reads from env file
+    Config: Pydantic model for config settings file
     Settings: Root for config settings and reference data
 
 Methods:
-    generate_settings: @lru_cached method that fetches the same settings instance
+    generate_settings: method that builds the settings object
 
 TODO: Move file update mechanism in here as it is not used anywhere else
 """
 # endregion
-
-from functools import lru_cache
 
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -60,29 +59,6 @@ class Settings(BaseModel):
     config: Config
 
 
-@lru_cache
-def load_settings_from_file() -> Settings:
-    # region Docs
-
-    """
-    Returns:
-        Settings: Distributed settings object for global use
-    Raises:
-        FileNotFoundError: If the config.yaml is not found.
-    """
-    # endregion
-    secrets = Secrets()
-
-    try:
-        with open("settings.yaml", "r", encoding="UTF-8") as f:
-            contents = yaml.safe_load(f)
-            if contents:
-                return Settings(config=Config(**contents), secrets=secrets)
-
-    except FileNotFoundError as exc:
-        raise FileNotFoundError("settings.yaml required") from exc
-
-
 def generate_settings(supplied: dict = None) -> Settings:
     # region Docs
     """
@@ -99,6 +75,12 @@ def generate_settings(supplied: dict = None) -> Settings:
 
     if supplied:
         config = Config(**supplied)
-        return Settings(config=config, secrets=secrets)
+    else:
+        try:
+            with open("settings.yaml", "r", encoding="UTF-8") as f:
+                contents = yaml.safe_load(f)
+                config = Config(**contents) if contents else Config()
+        except FileNotFoundError as exc:
+            raise FileNotFoundError("settings.yaml required") from exc
 
-    return load_settings_from_file()
+    return Settings(config=config, secrets=secrets)

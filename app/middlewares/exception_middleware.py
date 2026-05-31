@@ -18,9 +18,6 @@ import requests
 from ..utils.logger import logger
 
 
-from ..settings import generate_settings
-
-
 class ExceptionMiddleware(BaseHTTPMiddleware):
     # region Docs
     """
@@ -44,9 +41,6 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         # endregion
 
         super().__init__(app)
-        settings = generate_settings()
-        if not settings.config.local:
-            self.pushover = None
 
     def pushover_message(self, content) -> Response:
         # region Docs

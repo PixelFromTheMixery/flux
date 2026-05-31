@@ -13,24 +13,21 @@ Methods:
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from ..data.database import RefDB
 from ..models.data_models import UpsertRequest
-from ..settings import Settings, generate_settings
 from ..utils.helper import transformer
 
 router = APIRouter()
 
 
-async def database_ref(settings: Settings = Depends(generate_settings)):
-    return await RefDB.db_singleton(
-        settings.secrets.mongodb_uri, settings.secrets.field_encryption_key
-    )
+async def database_ref(request: Request):
+    return request.app.state.db
 
 
 @router.get("/all", status_code=HTTPStatus.OK)
-async def get_database_data(db: Annotated[RefDB, Depends(database_ref)]):
+async def get_database_data(db: RefDB = Depends(database_ref)):
     # region Docs
     """
     Endpoint for fetching database data
@@ -55,3 +52,10 @@ async def get_entry(
     db: Annotated[RefDB, Depends(database_ref)], group: str, name: str
 ) -> dict:
     return await db.get_entry(group, name)
+
+
+@router.delete("/{doc_id}", status_code=HTTPStatus.OK)
+async def delete_entry(
+    db: Annotated[RefDB, Depends(database_ref)], doc_id: str
+) -> dict:
+    return await db.delete_entry(doc_id)

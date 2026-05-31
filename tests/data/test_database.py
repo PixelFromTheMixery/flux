@@ -11,6 +11,8 @@ Tests:
 """
 # endregion
 
+from cryptography.fernet import Fernet
+from pymongo import AsyncMongoClient
 import pytest
 
 from app.data.database import RefDB
@@ -21,8 +23,17 @@ from app.models.data_models import (
 )
 
 
+@pytest.fixture(autouse=True)
+async def clear_database(mongo_conn):
+    client = AsyncMongoClient(mongo_conn)
+
+    await client.drop_database("flux_db")
+
+    await client.close()
+
+
 @pytest.fixture(name="mock_db")
-async def make_connection(mongo_settings):
+async def make_connection(mongo_conn):
     # region Docs
     """
     Sets up fake database in tmp dir to protect live data.
@@ -33,14 +44,19 @@ async def make_connection(mongo_settings):
     """
     # endregion
 
+    key = Fernet.generate_key().decode()
+
     RefDB.instance = None
+
     db_instance = await RefDB.db_singleton(
-        mongo_settings.secrets.mongodb_uri, mongo_settings.secrets.field_encryption_key
+        mongo_conn,
+        key,
     )
 
     yield db_instance
 
-    await db_instance.close()
+    if db_instance.client:
+        await db_instance.client.close()
     RefDB.instance = None
 
 
@@ -56,7 +72,8 @@ async def test_close_connection(mock_db):
     """
     # endregion
 
-    await mock_db.close()
+    print("check")
+    await mock_db.instance.close()
 
 
 @pytest.mark.asyncio
@@ -65,7 +82,11 @@ async def test_upsert_entry_success(mock_db, mock_settings):
     """
     Insert new entry and then updates said entry
 
-    Notes: Everything is done in one function according to all doc pathways to avoid code duplication.
+    Notes: Everything
+    - Insert
+    - Update
+    - Delete
+    Is done in one function according to all doc pathways to avoid code duplication.
 
     Inputs:
         new_doc (NewDoc): a brand new mapping entry
@@ -93,6 +114,10 @@ async def test_upsert_entry_success(mock_db, mock_settings):
     # Ensure that we are altering the same 'document'
     assert mock_entry_update.id == mock_entry_result.id
     assert mock_entry_update.integrations.traggo == "updated"
+
+    delete_result = await mock_db.delete_entry(mock_entry_result.id)
+    assert isinstance(delete_result, dict)
+    assert delete_result["Deleted"]["id"] == str(mock_entry_result.id)
 
 
 @pytest.mark.asyncio
