@@ -24,6 +24,7 @@ import time
 
 import requests
 
+from ..models.api_models import APIRequest
 from .logger import logger
 
 RETRIES: int = 3
@@ -33,26 +34,24 @@ TIMEOUT: int = 3
 RESPONSE_MAP = {
     "delete": lambda u, h: requests.delete(u, headers=h, timeout=TIMEOUT),
     "get": lambda u, h: requests.get(u, headers=h, timeout=TIMEOUT),
-    "patch": lambda u, h, d: requests.patch(
+    "patch": lambda u, h, p: requests.patch(
         u,
         headers=h,
         timeout=TIMEOUT,
-        json=d if isinstance(d, dict) else None,
-        data=d if isinstance(d, str) else None,
+        **({"json": p} if isinstance(p, dict) else {"data": p}),
     ),
-    "post": lambda u, h, d: requests.post(
+    "post": lambda u, h, p: requests.post(
         u,
         headers=h,
         timeout=TIMEOUT,
-        json=d if isinstance(d, dict) else None,
-        data=d if isinstance(d, str) else None,
+        **({"json": p} if isinstance(p, dict) else {"data": p}),
     ),
-    "put": lambda u, h, d: requests.put(
+    "put": lambda u, h, p: requests.put(
         u,
         headers=h,
         timeout=TIMEOUT,
-        json=d if isinstance(d, dict) else None,
-        data=d if isinstance(d, str) else None,
+        json=p if isinstance(p, dict) else None,
+        **({"json": p} if isinstance(p, dict) else {"data": p}),
     ),
 }
 
@@ -81,17 +80,16 @@ def exception_handler(e, result, attempt):
     return RETRIES + 1
 
 
-def build_header():
+def build_header(target, auth_token, content_type: str = "application/json") -> dict:
+    base_header = {"Content-Type": content_type}
+    if target == "traggo":
+        base_header["X-Api-Token"] = auth_token
+    else:
+        base_header["Authorization"] = "Bearer " + auth_token
+    return base_header
 
-    return {"Content-Type": "application/json", "Authorization": "Bearer " + ""}
 
-
-def make_call(
-    category: str,
-    url: str,
-    info: str,
-    data: dict = None,
-):
+def make_call(api_request: APIRequest):
     # region Docs
     """
     Makes a call based on method, url, and info
@@ -112,17 +110,18 @@ def make_call(
     """
     # endregion
 
-    headers = build_header
+    headers = build_header(api_request.target, api_request.auth_token)
+    category = api_request.category
 
     attempt = 0
     while True:
         try:
-            logger.info("Attempt to %s: %s of %s", info, attempt, RETRIES)
+            logger.info("Attempt to %s: %s of %s", api_request.info, attempt, RETRIES)
 
             response = (
-                RESPONSE_MAP[category](url, headers, data)
+                RESPONSE_MAP[category](api_request.url, headers, api_request.payload)
                 if category in ["patch", "post", "put"]
-                else RESPONSE_MAP[category](url, headers)
+                else RESPONSE_MAP[category](api_request.url, headers)
             )
 
             response.raise_for_status()

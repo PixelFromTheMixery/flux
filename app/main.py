@@ -19,7 +19,7 @@ from http import HTTPStatus
 from fastapi import FastAPI
 
 # from .middlewares.exception_middleware import ExceptionMiddleware
-from .settings import generate_settings
+from .settings import SETTINGS
 from .utils.docs import DESCRIPTION, TAGS
 from .utils.logger import logger
 from . import routers
@@ -46,8 +46,6 @@ def create_app() -> FastAPI:
     )
 
     #     fastapi_app.add_middleware(ExceptionMiddleware)
-
-    fastapi_app.state.settings = generate_settings()
 
     fastapi_app.include_router(routers.router)
 

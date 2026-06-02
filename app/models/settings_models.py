@@ -57,7 +57,7 @@ class TraggoSettings(BaseModel):
     """
 
     # endregion
-    traggo_url: str = "http://localhost:3030/graphql"
+    url: str = "http://localhost:3030/graphql"
 
 
 class Integrations(BaseModel):
@@ -77,4 +77,4 @@ class Integrations(BaseModel):
     # endregion
     anytype: Optional[AnytypeSettings] = None
     superprod: Optional[SPSettings] = None
-    traggo: Optional[TraggoSettings] = None
+    traggo: Optional[TraggoSettings] = TraggoSettings()

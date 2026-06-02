@@ -14,7 +14,10 @@ Methods:
 
 TODO: Move file update mechanism in here as it is not used anywhere else
 """
+
 # endregion
+
+from typing import Optional
 
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -53,34 +56,34 @@ class Config(BaseModel):
     # Integrations
     integrations: Integrations = Integrations()
 
-
-class Settings(BaseModel):
-    secrets: Secrets
-    config: Config
+    model_config = SettingsConfigDict(yaml_file="settings.yaml")
 
 
-def generate_settings(supplied: dict = None) -> Settings:
-    # region Docs
-    """
-    Build Settings from dict if provided, otherwise from file
+class Settings(BaseSettings):
+    secrets: Secrets = Secrets()
+    config: Config = Config()
 
-    Args:
-        supplied (dict): settings dict, usually for testing
+    @classmethod
+    def from_dict(cls, supplied: dict) -> "Settings":
+        return cls(config=Config(**supplied), secrets=Secrets())
 
-    Returns:
-        Settings: from code
-    """
-    # endregion
-    secrets = Secrets()
+    def update_config_file(self, new_config_data):
+        self.config = Config(**new_config_data)
 
-    if supplied:
-        config = Config(**supplied)
-    else:
-        try:
-            with open("settings.yaml", "r", encoding="UTF-8") as f:
-                contents = yaml.safe_load(f)
-                config = Config(**contents) if contents else Config()
-        except FileNotFoundError as exc:
-            raise FileNotFoundError("settings.yaml required") from exc
+        with open("settings.yaml", "w", encoding="UTF-8") as f:
+            yaml.safe_dump(self.config.model_dump(), f)
 
-    return Settings(config=config, secrets=secrets)
+
+SETTINGS: Optional[Settings] = None
+
+
+def get_settings() -> Settings:
+    global SETTINGS  # This is a global instance modifier. pylint: disable=global-statement
+    if SETTINGS is None:
+        SETTINGS = Settings()
+    return SETTINGS
+
+
+def init_test_settings(supplied: dict) -> Settings:
+    global SETTINGS  # This is a global instance modifier for testing. pylint: disable=global-statement
+    SETTINGS = Settings.from_dict(supplied)

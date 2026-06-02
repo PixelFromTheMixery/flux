@@ -18,6 +18,7 @@ from fastapi import APIRouter, Depends, Request
 from ..data.database import RefDB
 from ..models.data_models import UpsertRequest, MappingDoc, EncryptedCredential
 from ..utils.helper import transformer
+from ..utils.logger import logger
 
 router = APIRouter()
 
@@ -35,6 +36,7 @@ async def get_database_data(db: RefDB = Depends(database_ref)):
         dict: database contents
     """
     # endregion
+    logger.info("Data endpoint called")
     return await db.show_table()
 
 
@@ -47,6 +49,7 @@ async def get_database_data(db: RefDB = Depends(database_ref)):
 async def upsert_database_entry(
     db: Annotated[RefDB, Depends(database_ref)], upsert: UpsertRequest
 ) -> dict:
+    logger.info("Data upsert endpoint called")
     result = await db.upsert_entry(upsert)
     return transformer(result)
 
@@ -60,6 +63,7 @@ async def upsert_database_entry(
 async def get_database_entry(
     db: Annotated[RefDB, Depends(database_ref)], group: str, name: str
 ) -> dict:
+    logger.info("Data fetch endpoint called")
     return await db.get_entry(group, name)
 
 
@@ -69,4 +73,5 @@ async def get_database_entry(
 async def delete_database_entry(
     db: Annotated[RefDB, Depends(database_ref)], doc_id: str
 ) -> dict:
+    logger.info("Data delete endpoint called")
     return await db.delete_entry(doc_id)

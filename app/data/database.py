@@ -136,12 +136,12 @@ class RefDB:
             entry = await EncryptedCredential.find_one(
                 EncryptedCredential.service == key_request.service
             )
-            encrypted_cred = self.cryptor.crypt_string(key_request.key)
+            encrypted_cred = self.cryptor.crypt_string(key_request.key, False)
             if entry:
                 setattr(
                     entry,
                     "encrypted_api_key",
-                    self.cryptor.crypt_string(key_request.key),
+                    encrypted_cred,
                 )
                 action = "Updated"
             else:
@@ -191,7 +191,7 @@ class RefDB:
         entry = await EncryptedCredential.find_one(
             EncryptedCredential.service == service
         )
-        return self.cryptor.crypt_string(entry.encrypted_api_key, False)
+        return self.cryptor.crypt_string(entry.encrypted_api_key)
 
     async def delete_entry(self, doc_id):
         entry = await MappingDoc.get(doc_id)
