@@ -19,8 +19,8 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.get("/health", status_code=HTTPStatus.OK)
-async def get_health_endpoint() -> dict:
+@router.get("/health", status_code=HTTPStatus.OK, tags=["get"])
+async def get_app_health() -> dict:
     # region Docs
     """
     Endpoint for health check

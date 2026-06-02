@@ -16,17 +16,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 
 from ..data.database import RefDB
-from ..models.data_models import UpsertRequest
+from ..models.data_models import UpsertRequest, MappingDoc, EncryptedCredential
 from ..utils.helper import transformer
 
 router = APIRouter()
 
 
-async def database_ref(request: Request):
+def database_ref(request: Request):
     return request.app.state.db
 
 
-@router.get("/all", status_code=HTTPStatus.OK)
+@router.get("/all", status_code=HTTPStatus.OK, tags=["get"], response_model=dict | list)
 async def get_database_data(db: RefDB = Depends(database_ref)):
     # region Docs
     """
@@ -35,27 +35,38 @@ async def get_database_data(db: RefDB = Depends(database_ref)):
         dict: database contents
     """
     # endregion
-
     return await db.show_table()
 
 
-@router.post("/upsert", status_code=HTTPStatus.ACCEPTED)
-async def upsert_entry(
+@router.post(
+    "/upsert",
+    status_code=HTTPStatus.ACCEPTED,
+    tags=["upsert"],
+    response_model=MappingDoc | EncryptedCredential,
+)
+async def upsert_database_entry(
     db: Annotated[RefDB, Depends(database_ref)], upsert: UpsertRequest
 ) -> dict:
     result = await db.upsert_entry(upsert)
     return transformer(result)
 
 
-@router.get("/{group}/{name}", status_code=HTTPStatus.OK)
-async def get_entry(
+@router.get(
+    "/{group}/{name}",
+    status_code=HTTPStatus.OK,
+    tags=["get"],
+    response_model=MappingDoc,
+)
+async def get_database_entry(
     db: Annotated[RefDB, Depends(database_ref)], group: str, name: str
 ) -> dict:
     return await db.get_entry(group, name)
 
 
-@router.delete("/{doc_id}", status_code=HTTPStatus.OK)
-async def delete_entry(
+@router.delete(
+    "/{doc_id}", status_code=HTTPStatus.OK, tags=["delete"], response_model=MappingDoc
+)
+async def delete_database_entry(
     db: Annotated[RefDB, Depends(database_ref)], doc_id: str
 ) -> dict:
     return await db.delete_entry(doc_id)

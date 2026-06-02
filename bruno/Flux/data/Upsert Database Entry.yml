@@ -1,0 +1,112 @@
+info:
+  name: Upsert Database Entry
+  type: http
+  seq: 2
+  tags:
+    - data
+    - upsert
+
+http:
+  method: POST
+  url: "{{baseUrl}}/data/upsert"
+  body:
+    type: json
+    data: |-
+      {
+        "incoming": ""
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: Upsert Doc
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/data/upsert"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "incoming": {
+              "name": "Test: Tag",
+              "group": "tag",
+              "int_name": "traggo",
+              "int_id": "Test: Tag"
+            }
+          }
+    response:
+      status: 202
+      statusText: Accepted
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "generatedid",  
+            "name": "Test: Tag",
+            "group": "tag",
+            "int_name": "traggo",
+            "int_id": "Test: Tag"
+          }
+  - name: 422 Response
+    description: Validation Error
+    request:
+      url: "{{baseUrl}}/data/upsert"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "incoming": ""
+          }
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "detail": [
+              {
+                "loc": [],
+                "msg": "",
+                "type": "",
+                "input": "",
+                "ctx": {}
+              }
+            ]
+          }
+  - name: Upsert Key
+    description: Successful Response
+    request:
+      url: "{{baseUrl}}/data/upsert"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "incoming": {
+              "service": "traggo",
+              "key": "super-secret-key",
+            }
+          }
+    response:
+      status: 202
+      statusText: Accepted
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""

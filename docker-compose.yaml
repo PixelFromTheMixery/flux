@@ -20,10 +20,16 @@ services:
   #     interval: 30s
   #     timeout: 10s
   #     retries: 3
+  traggo:
+    image: traggo/server:latest
+    env_file:
+      - .env.docker
+    ports:
+      - 3030:3030
+    volumes:
+      - ./traggodata:/opt/traggo/data
   mongodb:
     image: mongodb/mongodb-atlas-local
-    hostname: mongodb
-    container_name: mongodb
     env_file:
       - .env.docker
     ports:
@@ -33,18 +39,13 @@ services:
       - db:/data/db
       - configdb:/data/configdb
       - mongot:/data/mongot
+    command: ["mongod", "--bind_ip_all"]
     healthcheck:
       test: 'mongosh --exec "db.runCommand({ ping: 1 })" --quiet || exit 1'
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-  traggo:
-    image: traggo/server:latest
-    ports:
-      - 3030:3030
-    volumes:
-      - ./traggodata:/opt/traggo/data
 volumes:
   db:
   configdb:

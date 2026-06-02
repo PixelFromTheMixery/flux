@@ -57,6 +57,7 @@ class TraggoSettings(BaseModel):
     """
 
     # endregion
+    traggo_url: str = "http://localhost:3030/graphql"
 
 
 class Integrations(BaseModel):
