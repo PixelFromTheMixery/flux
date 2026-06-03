@@ -1,5 +1,4 @@
-from ..models.api_models import APIRequest
-from ..utils.api_tools import make_call
+from ..utils.api_tools import APIRequest, make_call
 
 
 class TraggoService:
@@ -18,14 +17,11 @@ class TraggoService:
         )
         return make_call(request)
 
-    def query_builder(self, title: str, body: str, variables_definitions: str = ""):
-        return {"query": f"query {title} {variables_definitions}{{{body.strip()}}}"}
+    def query_builder(self, body: str, variables_definitions: str = ""):
+        return {"query": f"query{variables_definitions}{{{body.strip()}}}"}
 
     def connection_check(self) -> dict:
 
-        payload = self.query_builder(
-            "TraggoVersion",
-            "version{name}",
-        )
+        payload = {"query": "{ version { name } }"}
 
-        return self.prefilled_request_model("check traggo version", payload)["data"]
+        return self.prefilled_request_model("check version", payload)["data"]

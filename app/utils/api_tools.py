@@ -21,11 +21,22 @@ Methods:
 
 import random
 import time
+from typing import Optional
 
 import requests
+from pydantic import BaseModel
 
-from ..models.api_models import APIRequest
 from .logger import logger
+
+
+class APIRequest(BaseModel):
+    target: str
+    category: str
+    url: str
+    info: str
+    auth_token: str
+    payload: Optional[dict | str] = None
+
 
 RETRIES: int = 3
 DELAY: int = 2
@@ -116,7 +127,13 @@ def make_call(api_request: APIRequest):
     attempt = 0
     while True:
         try:
-            logger.info("Attempt to %s: %s of %s", api_request.info, attempt, RETRIES)
+            logger.info(
+                "Attempt to %s from %s: %s of %s",
+                api_request.info,
+                api_request.target,
+                attempt,
+                RETRIES,
+            )
 
             response = (
                 RESPONSE_MAP[category](api_request.url, headers, api_request.payload)

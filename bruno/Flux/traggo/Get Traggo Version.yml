@@ -31,3 +31,27 @@ examples:
       body:
         type: json
         data: "{}"
+  - name: "200"
+    request:
+      url: "{{baseUrl}}/traggo/version"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: date
+          value: Tue, 02 Jun 2026 22:56:55 GMT
+        - name: server
+          value: uvicorn
+        - name: content-length
+          value: "28"
+        - name: content-type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "version": {
+              "name": "0.8.3"
+            }
+          }

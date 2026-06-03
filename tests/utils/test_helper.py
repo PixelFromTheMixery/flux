@@ -5,14 +5,20 @@ Module: /app/utils/helper.py
 Notes: will likely be deleted soon with the addition of anypython
 
 Tests:
-    make_deeplink
+    test_transformer
 
 """
 
 # endregion
-from app.models.shared_models import BasicModel
+
+from pydantic import BaseModel
 
 from app.utils.helper import transformer
+
+
+class BasicModel(BaseModel):
+    id: str
+    name: str
 
 
 def test_transformer():

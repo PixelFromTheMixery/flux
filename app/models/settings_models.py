@@ -9,8 +9,6 @@ Classes:
 
     Integrations: Collection of all below integrations
 
-
-TODO: SP and Traggo
 """
 # endregion
 
@@ -53,7 +51,7 @@ class TraggoSettings(BaseModel):
     Settings for Traggo
 
     Attributes:
-        Unknown
+        url: url to the graphql instance
     """
 
     # endregion
@@ -66,7 +64,6 @@ class Integrations(BaseModel):
     Collective Class for all above integrations
 
     Attributes:
-        testing (dict): object to perform tests on
 
         anytype (AnytypeSettings): N/A
         superprod (SPSettings): N/A
