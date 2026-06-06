@@ -1,13 +1,13 @@
 info:
-  name: Get Traggo Version
+  name: Refesh Traggo Key
   type: http
-  seq: 2
+  seq: 1
   tags:
     - traggo
 
 http:
   method: GET
-  url: "{{baseUrl}}/traggo/version"
+  url: "{{baseUrl}}/traggo/key"
   auth: inherit
 
 settings:

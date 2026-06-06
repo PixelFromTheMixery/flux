@@ -1,13 +1,20 @@
 info:
-  name: Get Traggo Version
+  name: Upsert Tag
   type: http
-  seq: 2
+  seq: 3
   tags:
     - traggo
 
 http:
-  method: GET
-  url: "{{baseUrl}}/traggo/version"
+  method: POST
+  url: "{{baseUrl}}/traggo/tag"
+  body:
+    type: json
+    data: |-
+      {
+        "key": "test",
+        "color": "#000000"
+      }
   auth: inherit
 
 settings:

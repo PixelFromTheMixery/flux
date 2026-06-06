@@ -13,7 +13,10 @@ http:
     type: json
     data: |-
       {
-        "incoming": ""
+        "incoming": {
+          "service": "traggo",
+          "key": ""
+        }
       }
   auth: inherit
 

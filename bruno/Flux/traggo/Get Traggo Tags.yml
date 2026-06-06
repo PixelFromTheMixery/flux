@@ -1,14 +1,16 @@
 info:
-  name: Get Traggo Version
+  name: Get Traggo Tags
   type: http
-  seq: 2
+  seq: 4
   tags:
     - traggo
 
 http:
   method: GET
-  url: "{{baseUrl}}/traggo/version"
-  auth: inherit
+  url: "{{baseUrl}}/traggo/tags"
+  auth:
+    type: bearer
+    token: LjggrioTeuV5HM5NK2g3
 
 settings:
   encodeUrl: true
