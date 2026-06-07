@@ -10,7 +10,6 @@ http:
   url: "{{baseUrl}}/traggo/tags"
   auth:
     type: bearer
-    token: LjggrioTeuV5HM5NK2g3
 
 settings:
   encodeUrl: true
