@@ -51,27 +51,44 @@ class Config(BaseModel):
     # endregion
 
     # General
-    local: bool = True
+    local: bool
 
     # Integrations
     integrations: Integrations = Integrations()
 
-    model_config = SettingsConfigDict(yaml_file="settings.yaml")
+
+def load_config_file(file_path: str = None):
+    path = file_path or "settings.yaml"
+    try:
+        with open(path, "r", encoding="UTF-8") as f:
+            new_config_data = yaml.safe_load(f)
+            config = Config(**new_config_data)
+        if SETTINGS:
+            SETTINGS.config = config
+        return config
+    except FileNotFoundError as exc:
+        raise FileNotFoundError("settings.yaml required") from exc
+
+
+def update_config_file(new_config_data):
+    SETTINGS.config = Config(**new_config_data)
+
+    with open("settings.yaml", "w", encoding="UTF-8") as f:
+        yaml.safe_dump(SETTINGS.config.model_dump(), f)
 
 
 class Settings(BaseSettings):
     secrets: Secrets = Secrets()
-    config: Config = Config()
+    config: Config
 
     @classmethod
-    def from_dict(cls, supplied: dict) -> "Settings":
+    def from_dict(cls, supplied: dict) -> Settings:
         return cls(config=Config(**supplied), secrets=Secrets())
 
-    def update_config_file(self, new_config_data):
-        self.config = Config(**new_config_data)
-
-        with open("settings.yaml", "w", encoding="UTF-8") as f:
-            yaml.safe_dump(self.config.model_dump(), f)
+    @classmethod
+    def from_file(cls) -> Settings:
+        config = load_config_file()
+        return cls(config=config, secrets=Secrets())
 
 
 SETTINGS: Optional[Settings] = None
@@ -80,10 +97,12 @@ SETTINGS: Optional[Settings] = None
 def get_settings() -> Settings:
     global SETTINGS  # This is a global instance modifier. pylint: disable=global-statement
     if SETTINGS is None:
-        SETTINGS = Settings()
+        SETTINGS = Settings.from_file()
     return SETTINGS
 
 
 def init_test_settings(supplied: dict) -> Settings:
     global SETTINGS  # This is a global instance modifier for testing. pylint: disable=global-statement
+    SETTINGS = None
     SETTINGS = Settings.from_dict(supplied)
+    return SETTINGS

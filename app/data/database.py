@@ -138,8 +138,8 @@ class RefDB:
         if entry:
             return transformer(entry)
 
-        logger.error("Attempt to find a non-existent entry")
-        return {"Error": "Not Found"}
+        logger.info("No %s named %s", group, name)
+        return {}
 
     async def upsert_entry(self, request: UpsertRequest):
         # region Docs
@@ -264,5 +264,5 @@ class RefDB:
         entry = await MappingDoc.get(doc_id)
         if entry:
             await entry.delete()
-            return {"Deleted": transformer(entry)}
+            return entry
         return {"Error": "Not Found"}

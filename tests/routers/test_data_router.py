@@ -7,7 +7,17 @@ Tests:
 
 """
 
+from pymongo import AsyncMongoClient
 import pytest
+
+
+@pytest.fixture(autouse=True)
+async def clear_database(mongo_conn):
+    client = AsyncMongoClient(mongo_conn)
+
+    await client.drop_database("flux_db")
+
+    await client.close()
 
 
 # endregion
@@ -52,11 +62,9 @@ async def test_upsert_entry_and_read(app_client):
 
     result_json = result.json()
 
-    print(result_json.keys())
-
     assert result.status_code == 202
 
-    assert {"id", "name", "group", "integrations"} == set(result_json.keys())
+    assert {"_id", "name", "group", "integrations"} == set(result_json.keys())
 
     assert result_json["name"] == "test tag"
     assert result_json["group"] == "tag"
@@ -67,7 +75,7 @@ async def test_upsert_entry_and_read(app_client):
     assert read_result.status_code == 200
     assert read_result.json() == result_json
 
-    delete_result = await app_client.delete(f"/data/{result_json['id']}")
+    delete_result = await app_client.delete(f"/data/{result_json['_id']}")
 
     assert delete_result.status_code == 200
-    assert delete_result.json()["Deleted"] == result_json
+    assert delete_result.json() == result_json

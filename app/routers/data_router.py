@@ -17,7 +17,6 @@ from fastapi import APIRouter, Depends, Request
 
 from ..data.database import RefDB
 from ..models.data_models import UpsertRequest, MappingDoc, EncryptedCredential
-from ..utils.helper import transformer
 from ..utils.logger import logger
 
 router = APIRouter()
@@ -27,8 +26,8 @@ def database_ref(request: Request):
     return request.app.state.db
 
 
-@router.get("/all", status_code=HTTPStatus.OK, tags=["get"], response_model=dict | list)
-async def get_database_data(db: RefDB = Depends(database_ref)):
+@router.get("/all", status_code=HTTPStatus.OK, tags=["get"])
+async def get_database_data(db: RefDB = Depends(database_ref)) -> dict:
     # region Docs
     """
     Endpoint for fetching database data
@@ -51,7 +50,7 @@ async def upsert_database_entry(
 ) -> dict:
     logger.info("Data upsert endpoint called")
     result = await db.upsert_entry(upsert)
-    return transformer(result)
+    return result
 
 
 @router.get(
@@ -72,6 +71,6 @@ async def get_database_entry(
 )
 async def delete_database_entry(
     db: Annotated[RefDB, Depends(database_ref)], doc_id: str
-) -> dict:
+):
     logger.info("Data delete endpoint called")
     return await db.delete_entry(doc_id)

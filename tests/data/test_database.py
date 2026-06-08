@@ -116,8 +116,7 @@ async def test_upsert_entry_success(mock_db, mock_settings):
     assert mock_entry_update.integrations.traggo == "updated"
 
     delete_result = await mock_db.delete_entry(mock_entry_result.id)
-    assert isinstance(delete_result, dict)
-    assert delete_result["Deleted"]["id"] == str(mock_entry_result.id)
+    assert str(delete_result.id) == str(mock_entry_result.id)
 
 
 @pytest.mark.asyncio

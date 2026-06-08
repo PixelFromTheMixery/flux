@@ -12,8 +12,8 @@ http:
     type: json
     data: |-
       {
-        "key": "test",
-        "color": "#000000"
+        "name": "test",
+        "color": "#AAAAAA"
       }
   auth: inherit
 

@@ -15,7 +15,7 @@ from cryptography.fernet import Fernet
 from testcontainers.core.generic import DockerContainer
 import pytest
 
-from app.settings import Settings, Secrets
+from app.settings import Settings, Secrets, Config
 
 
 @pytest.fixture(name="mock_settings")
@@ -39,10 +39,13 @@ def fake_settings(monkeypatch, mongo_conn):
     monkeypatch.setenv("FIELD_ENCRYPTION_KEY", valid_fernet_key)
 
     monkeypatch.setenv("MONGODB_URI", mongo_conn)
-
     secrets = Secrets()
-    mock = Settings(config={}, secrets=secrets)
-    monkeypatch.setattr("app.settings.generate_settings", lambda: mock)
+
+    test_config_dict = {"local": True}
+    test_config = Config(**test_config_dict)
+
+    mock = Settings(config=test_config, secrets=secrets)
+    monkeypatch.setattr("app.settings.get_settings", lambda: mock)
 
     return mock
 
@@ -75,7 +78,8 @@ def mongo_uri():
     mongo = DockerContainer("mongo:6.0").with_exposed_ports(27017)
 
     with mongo:
-        host = mongo.get_container_host_ip()
-        port = mongo.get_exposed_port(27017)
-        conn_str = f"mongodb://{host}:{port}/flux_db"
+        conn_str = (
+            f"mongodb://{mongo.get_container_host_ip()}:"
+            f"{mongo.get_exposed_port(27017)}/flux_db"
+        )
         yield conn_str

@@ -15,18 +15,34 @@ from datetime import datetime
 from pydantic import BaseModel, field_validator
 
 
-class Tag(BaseModel):
+class TagUpsert(BaseModel):
     # region Docs
     """
-    Basic Tag shape
+    Tag Upsert shape
 
     Attributes:
         key (str): name of tag key
-        value (str): name of tag value
+        value (str): name of tag value if assigning value
+        color (str): HTML colour code if creating new tags
     """
 
     # endregion
 
+    name: str
+    old_name: Optional[str] = None
+    color: Optional[str] = "#FFFFFF"
+
+    @field_validator("color")
+    @classmethod
+    def color_code(cls, v):
+        if v is None:
+            return v
+        if not isinstance(v, str) or not v.startswith("#") or len(v) != 7:
+            raise ValueError("color is not valid html code.")
+        return v
+
+
+class Tag(BaseModel):
     key: str
     value: str
 
@@ -55,7 +71,7 @@ class TimeEntryRequest(BaseModel):
     def check_iso(cls, v):
         """Ensures time values are in iso format"""
         try:
-            datetime.fromisoformat(v.replace("Z", "+00:00"))
+            assert datetime.fromisoformat(v.replace("Z", "+00:00"))
         except ValueError as exc:
             raise ValueError(
                 "Time values must be stored as iso format strings"

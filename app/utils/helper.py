@@ -26,5 +26,5 @@ def transformer(model) -> dict:
     # endregion
 
     result = model.model_dump()
-    result["id"] = str(result["id"])
+    result["_id"] = str(result["id"])
     return result

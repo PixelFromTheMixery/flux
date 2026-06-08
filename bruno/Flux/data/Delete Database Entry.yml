@@ -11,7 +11,7 @@ http:
   url: "{{baseUrl}}/data/:doc_id"
   params:
     - name: doc_id
-      value: ""
+      value: 6a251e13c661c1ab6c6936f6
       type: path
   auth: inherit
 

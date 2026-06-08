@@ -94,7 +94,7 @@ def exception_handler(e, result, attempt):
 def build_header(target, auth_token, content_type: str = "application/json") -> dict:
     base_header = {"Content-Type": content_type}
     if target == "traggo":
-        base_header["X-Api-Token"] = auth_token
+        base_header["Authorization"] = "traggo " + auth_token
     else:
         base_header["Authorization"] = "Bearer " + auth_token
     return base_header
